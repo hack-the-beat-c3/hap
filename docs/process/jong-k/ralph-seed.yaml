@@ -1,0 +1,129 @@
+goal: '김종한(@jong-k)이 통합 DRI로서 최신 main의 파티 UX와 기존 팀 기능을 보존하면서 충돌 중인 PR #5(commit 5fadcf4)의 개인정보 동의·간이 사주·타로 해설·결과 PNG 기능을 파티 참가자의 개인 단계에 통합하고 검증·문서화·푸시한다.'
+task_type: code
+brownfield_context:
+  project_type: brownfield
+  context_references:
+    - path: /mnt/d/klab/2026-hackathon/2026-gdg-08-28-해커톤/hap
+      role: primary
+      summary: 최신 main의 파티 랜딩, 게스트 딥링크, 룸 공유 덱과 PR #5 기능을 통합할 기존 애플리케이션
+    - path: git:docs/adr-0001-tarot-design@5fadcf4
+      role: reference
+      summary: 충돌 중인 PR #5의 동의·생년월일 입력·로컬 간이 사주·타로 이미지·해설·PNG 및 설계문서 변경
+    - path: git:1470887
+      role: reference
+      summary: 명시적 연결 계약 없이 이번 통합 완료 범위에 섞지 않을 PR #4 파티 대시보드 산출물
+  existing_patterns:
+    - 파티 랜딩 `/`과 게스트 딥링크 `?pin=`를 상위 진입 계약으로 사용한다.
+    - 룸 공유 덱과 호스트 공개 결과를 카드 권위 상태로 사용한다.
+    - BroadcastChannel 기반 페이지 세션 MVP를 유지한다.
+    - 개인 입력 상태는 React 로컬 상태에서 처리하고 원본 생년월일은 처리 후 제거한다.
+    - 주요 범위·충돌·상태 결정은 ADR에 기록한다.
+    - 코드와 5대 설계문서 및 QA 증거를 같은 변경 단위에서 일치시킨다.
+    - pnpm test, test:assets, lint, build 스크립트로 검증한다.
+    - 작업 브랜치에서 커밋·upstream push하고 PR에 증거를 남긴다.
+  existing_dependencies:
+    - React
+    - BroadcastChannel API
+    - Web Crypto API
+    - pnpm
+    - 최신 main의 룸·공유 덱·호스트 공개 구현
+constraints:
+  - 기본 진입점은 최신 main의 파티 랜딩 `/`과 게스트 딥링크 `?pin=`로 유지한다.
+  - PR #5 기능을 별도 solo 루트로 노출하거나 App 전체를 덮어쓰지 않는다.
+  - 개인 흐름은 파티 참가 단계 안에서 동의→생년월일 입력→로컬 간이 사주 확인→카드 공개 준비→호스트 공개 후 결과 확인 순서로 제공한다.
+  - 카드 배분과 공개 결과는 main의 룸 공유 덱과 호스트 권위 상태를 사용하며 통합 경로에서 PR #5의 독립 클라이언트 추첨을 호출하지 않는다.
+  - BroadcastChannel MVP에서는 공개 전에 비밀 카드를 선배정하지 않고 호스트 공개 시점에 공유 덱을 배분한다.
+  - 공개 전에는 카드 ID·이미지·이름·해설·순위·우승자·리캡·PNG를 DOM이나 공유 payload에 포함하지 않는다.
+  - 공개 전 문구는 `카드 배정 완료`가 아니라 `카드 공개 준비 완료`로 표시한다.
+  - 공개 후에만 모든 화면에 같은 카드와 우승 결과를 표시하고 개인 카드 PNG와 파티 리캡을 활성화한다.
+  - 원본 생년월일은 서버·URL·Web Storage·공유 payload로 보내거나 저장하지 않고 추첨 후 React 상태와 DOM에서도 제거한다.
+  - 동의·파생 오행·개인 결과도 URL이나 Web Storage에 저장하지 않으며 개인 입력 정보는 페이지 세션으로 제한한다.
+  - 새로고침 시 동의와 생년월일을 다시 입력하게 하고 `개인정보 보호를 위해 입력 세션이 초기화되었습니다`라고 안내한다.
+  - PIN과 닉네임으로 기존 참가자 슬롯을 자동 복구하지 않는다.
+  - 공개 전에는 호스트가 유령 슬롯을 제거할 수 있고 제거 후 동일 닉네임의 재입장을 허용한다.
+  - 공개 후에는 신규 입장과 슬롯 인계를 차단하며 준비 상태나 카드 결과의 자동 복구를 주장하지 않는다.
+  - 재연결 토큰·서버 지속성은 이번 범위에 추가하지 않으며 향후 불투명 토큰 도입은 별도 ADR로 결정한다.
+  - PR #4(commit 1470887)의 파티 대시보드는 독립 산출물로 유지하고 명시된 연결 계약 밖의 기능을 완료 범위에 합산하지 않는다.
+  - 충돌은 의미 단위로 해결하고 main의 기존 기능과 타인의 변경을 삭제하지 않는다.
+  - 범위 결정과 충돌 해결을 ADR로 기록하고 5대 설계문서 및 QA 증거를 실제 구현과 일치시킨다.
+  - 모바일 390x844에서 입력→사주→카드 공개→PNG 다운로드 흐름을 유지한다.
+  - '`pnpm test`, `pnpm run test:assets`, `pnpm run lint`, `pnpm run build`를 모두 통과해야 한다.'
+  - main에서 직접 작업하거나 force push하지 않으며 모든 변경을 ADR 규칙에 맞춰 작업 브랜치에 커밋·푸시하고 PR에 검증 증거를 남긴다.
+  - 검증 없이 완료를 주장하지 않는다.
+acceptance_criteria:
+  - description: 파티 랜딩과 `?pin=` 진입을 유지한 채 참가자가 동의·생년월일 입력·간이 사주·카드 공개 준비를 거쳐 호스트 공개 후 동일한 카드 해설·우승 결과·개인 PNG·파티 리캡을 확인할 수 있다.
+    semantic_ac_key: ac_5a371bc65aaa4c7f
+    verify_command: pnpm test
+  - description: 공개 전 카드 비밀 정보가 DOM과 공유 payload에 존재하지 않고 공개 시점에 모든 화면에 동일한 한 장과 결과가 나타난다.
+    semantic_ac_key: ac_4199d3d14d6a5fe1
+    verify_command: pnpm test
+  - description: 원본 생년월일이 서버·URL·Web Storage·공유 payload에 남지 않고 추첨 후 React 상태와 DOM에서도 제거된다.
+    semantic_ac_key: ac_bb34cb2cb2c6e156
+    verify_command: pnpm test
+  - description: 새로고침한 게스트는 개인정보 초기화 안내와 함께 새 입력 세션으로 재입장하며 공개 전 유령 슬롯 제거와 공개 후 신규 입장 차단 정책이 일관되게 적용된다.
+    semantic_ac_key: ac_a548465fcaefa7a9
+    verify_command: pnpm test
+  - description: 테스트와 자산 검사 22/22가 통과하고 lint와 production build가 성공한다.
+    semantic_ac_key: ac_c18d1b5672d5aeb7
+    verify_command: pnpm test && pnpm run test:assets && pnpm run lint && pnpm run build
+  - description: 모바일 390x844에서 입력→사주→카드 공개→PNG 다운로드 흐름과 공개 전후 정보 노출 경계가 브라우저 증거로 확인된다.
+    semantic_ac_key: ac_9dec465a97788fc9
+    expected_artifacts:
+      - docs/QA_EVIDENCE.md
+    verify_exemption_reason: 실제 모바일 viewport와 다중 세션의 DOM·네트워크 노출 여부는 브라우저 캡처와 수동 검토가 필요하다.
+  - description: ADR와 5대 설계문서가 통합 동작 및 제한사항과 일치하고 작업 브랜치가 clean 상태로 upstream에 모두 푸시되어 있다.
+    semantic_ac_key: ac_cfe9ea90c1ddd8e4
+    verify_command: test "$(git branch --show-current)" != main && test -z "$(git status --porcelain)" && test "$(git rev-list --count '@{u}..HEAD')" -eq 0
+    expected_artifacts:
+      - docs/design/01_USE_CASE_SPEC.md
+      - docs/design/02_COMPONENT_DESIGN.md
+      - docs/design/03_INTERFACE_DEFINITION.md
+      - docs/design/04_SEQUENCE_DIAGRAM.md
+      - docs/design/05_ERD.md
+      - docs/QA_EVIDENCE.md
+  - description: PR에는 통합 결과와 테스트·모바일·개인정보 검증 증거가 남고 force push나 main 직접 작업 없이 타인의 변경이 보존되었음을 리뷰할 수 있다.
+    semantic_ac_key: ac_79a4ebb1eeaea519
+    verify_exemption_reason: 원격 GitHub PR의 증거와 리뷰 이력은 인증된 GitHub 접근 및 사람의 의미 검토가 필요하다.
+ontology_schema:
+  name: PartyTarotIntegration
+  description: 기존 파티 룸 안의 페이지 세션 개인정보 입력, 간이 사주, 준비 상태, 호스트 권위 카드 공개와 결과를 표현한다.
+  fields:
+    - { name: room, type: object, description: PIN·단계·참가자·공유 덱·공개 결과를 소유하는 파티 상태, required: true }
+    - { name: participant, type: object, description: 닉네임·준비·파생 오행·공개 후 카드를 가진 참가자, required: true }
+    - { name: entryPoint, type: string, description: 파티 랜딩 `/` 또는 게스트 딥링크 `?pin=`, required: true }
+    - { name: consent, type: boolean, description: 현재 페이지 입력 세션의 개인정보 처리 동의, required: true }
+    - { name: birthInput, type: object, description: 브라우저에서만 처리 후 제거되는 원본 생년월일, required: true }
+    - { name: derivedProfile, type: object, description: 로컬 간이 사주 파생 오행과 문구, required: true }
+    - { name: roomPhase, type: string, description: 입장·준비·공개 완료 단계, required: true }
+    - { name: revealReadiness, type: boolean, description: 선배정이 아닌 카드 공개 준비 상태, required: true }
+    - { name: card, type: object, description: 호스트 공개 시 공유 덱에서 배분되는 한 장, required: true }
+    - { name: revealResult, type: object, description: 공개 후 카드·해설·우승·PNG·리캡, required: true }
+    - { name: ghostSlot, type: object, description: 공개 전에 호스트가 제거 가능한 기존 참가자 슬롯, required: true }
+    - { name: privacyState, type: object, description: 원본 입력 제거와 비저장 상태, required: true }
+    - { name: verificationEvidence, type: array, description: 테스트·브라우저·커밋·PR 증거, required: true }
+evaluation_principles:
+  - { name: 기존 파티 UX 보존, description: main 진입점·룸 기능·타인 변경을 보존하는지 평가한다., weight: 0.3 }
+  - { name: 개인정보 및 공개 경계, description: 원본 입력 비저장과 공개 전 카드 차단을 평가한다., weight: 0.3 }
+  - { name: 권위 상태와 수명주기, description: 공유 카드·동시 공개·재입장 정책의 일관성을 평가한다., weight: 0.2 }
+  - { name: 검증 및 추적 가능성, description: 테스트·문서·PR 증거의 정합성을 평가한다., weight: 0.2 }
+exit_conditions:
+  - name: 통합 완료
+    description: 요구된 참가자 흐름과 개인정보·공개·재입장 계약이 구현·검증되면 종료한다.
+    criteria: 모든 acceptance criterion과 테스트·자산·lint·build·브라우저·문서·push 증거가 확인된다.
+  - name: 보존 불가 차단
+    description: 타인의 변경을 삭제하거나 main 직접 작업·force push 없이 충돌을 해결할 수 없으면 완료를 주장하지 않는다.
+    criteria: 기존 main UX 보존과 필수 통합 계약을 동시에 충족할 안전한 변경 경로가 없다.
+  - name: 범위 확장 차단
+    description: 재연결 토큰·서버 지속성·PR #4 대시보드·추가 룸 기능이 필요하면 별도 ADR과 승인을 기다린다.
+    criteria: 승인되지 않은 범위 확장 없이는 acceptance criterion을 만족할 수 없다.
+metadata:
+  seed_id: seed_4ba8a580736c
+  version: 1.0.0
+  created_at: '2026-08-29T08:39:37.536423Z'
+  ambiguity_score: 0.088
+  interview_id: interview_20260829_082919
+  parent_seed_id: null
+  generation_mode: normal
+  degraded: false
+  unresolved_slots: []
+  recovery_reason: null
