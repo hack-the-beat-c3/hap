@@ -23,5 +23,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["src/lib/selfcheck.ts"]
+  "exclude": ["src/**/*.test.ts", "src/lib/selfcheck.ts"]
 }

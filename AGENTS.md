@@ -1,2 +1,270 @@
-## 컨벤션
-- 커밋 컨벤션: docs/conventions/commit-convention.md
+# AGENTS.md — Hack the Beat C3 / HAP (합)
+
+> 행사: 2026 I/O Extended: Hack the Beat, GDG Campus Korea, 2026-08-29  
+> 팀 GitHub: <https://github.com/hack-the-beat-c3>  
+> 팀 구성: 운영 측이 지정한 5인 팀.  
+> 목표: 5명이 같은 제품 사실과 근거를 사용해 리서치, 개발, 5대 설계문서, 검증 증거, 발표 슬라이드까지 완결한다.  
+> 제품 한 줄: 생년월일 기반 사주·오행 케미와 **1인 1장 타로 단판**으로 오늘 파티의 최강 운세를 가리는 현장형 멀티플레이 네트워킹 서비스.
+
+---
+
+## 0. 컨벤션 및 하드룰
+
+- **커밋 컨벤션**: `docs/conventions/commit-convention.md`
+- 규칙 충돌 시 `행사 당일 공식 규정 → 승인된 ADR → AGENTS.md → 기타 문서/코드` 순서로 따른다.
+
+1. 공식 규정·심사표·제출 형식을 작업 시작과 제출 직전에 다시 확인하고 `research/raw/`에 원문 URL, 확인일, 버전을 기록한다.
+2. 공개 자료에서 확인되지 않은 심사 기준은 공식 사실로 표현하지 않는다. 아래 3인 심사관·12개 항목은 운영진 원문 확인 전까지 **팀 내부 채점 계약**이다.
+3. 문서의 모든 기능 주장은 배포된 브라우저에서 동작해야 한다. 미구현 기능은 삭제하거나 명시적으로 `향후`로 표시한다.
+4. 숫자·시장·가격·원가·인터뷰·법률·API 주장은 출처 없이는 확정 문장으로 쓰지 않는다.
+5. 모든 완료 변경은 관련 테스트 후 **커밋하고 현재 브랜치에 푸시**한다. 푸시하지 않은 작업은 완료가 아니다.
+6. 제품·아키텍처·데이터·규칙의 주요 분기는 구현 전에 ADR을 작성하고 승인받는다.
+7. 개인 이메일이 포함된 이 파일을 공개 저장소로 전환하기 전 전원의 공개 동의를 받거나 이메일을 제거한다.
+
+---
+
+## 1. 운영 측 지정 팀 5인 — R&R
+
+| 운영 측 등록 표기 | 이메일 | GitHub | R&R | 확인 사항 |
+|---|---|---|---|---|
+| 이무원 | lmw.hpc@gmail.com | [lmwmason](https://github.com/lmwmason) | **미정** | GitHub 확인 완료 |
+| 김경민 | wwwx2794@gmail.com | [kyoungmin24](https://github.com/kyoungmin24) | **오행 보완 케미 & 1:1 QR 궁합 미션 DRI** | GitHub 확인 완료 |
+| 김종한 | 확인 필요 | 확인 필요 | **미정** | 이메일·GitHub 확인 필요 |
+| 김형준 / 김태환 | pro.cloud.kim@gmail.com | [procloudkim](https://github.com/procloudkim) | **타로카드 / 타로 플로우 DRI** | 오너 확인 완료 |
+| 5번째 팀원 | 확인 필요 | 확인 필요 | **미정** | 이름·이메일·GitHub 확인 필요 |
+
+---
+
+## 2. 제품 계약: 이것만 만든다
+
+### 2.1 게임 & 네트워킹 규칙
+
+- **1인 1장**이다. 2장 조합, 섯다식 조합 족보, 재추첨은 없다.
+- 메이저 아르카나 22장만 사용한다.
+- 타로 카드의 순위는 전통 타로의 공식 서열이 아니라 우리 서비스의 **파티 하우스 룰**임을 표시한다.
+- 사주·오행은 개인화 문구와 참가자 케미 및 1:1 QR 궁합에 사용한다. 승부 카드에는 생년월일에 따른 유불리가 없도록 룸 단위 공정 셔플을 사용한다.
+- 전원이 준비되면 호스트가 일괄 공개한다. 최고 순위 1명을 `오늘 파티의 최강 운세`로 발표한다.
+- 공개 후 내 부족 오행을 가진 파티원 지목 미션 및 1:1 QR 궁합 매칭을 지원한다.
+- 현금, 유가 경품, 베팅, 환전, 유료 재추첨은 금지한다. 결과는 엔터테인먼트용이며 중요한 의사결정 근거가 아님을 고지한다.
+
+### 2.2 사주 입력과 개인정보
+
+- 입력: 닉네임, 양력/음력, 생년월일, 출생시각(모름 허용).
+- 원본 생년월일·시각은 브라우저에서 계산하고 서버·로그·분석 도구에 저장하지 않는 것을 기본 설계로 한다 (`NOT STORED`).
+- 서버/QR 코드에는 닉네임, 파생 오행, 룸/카드 상태만 보낸다. 원본 생년월일을 다른 참가자에게 노출하지 않는다.
+
+---
+
+## 3. 5대 설계문서 배정
+
+<<<<<<< HEAD
+| 번호 | 필수 파일 | 담당자 | 필수 내용 |
+|---|---|---|---|
+| D1 | `docs/design/01_USE_CASE_SPEC.md` | 김경민 (@kyoungmin24) | 액터, 사전/사후조건, 기본·예외 흐름, 생성→입장→공개, 수용 기준 |
+| D2 | `docs/design/02_COMPONENT_DESIGN.md` | 김형준 (@procloudkim) / 팀 | 클라이언트/서버 컴포넌트, 책임, 상태 소유권, 의존 방향 |
+| D3 | `docs/design/03_INTERFACE_DEFINITION.md` | 팀 | 화면 계약, API/이벤트 이름, 요청·응답·오류, 실시간 메시지 |
+| D4 | `docs/design/04_SEQUENCE_DIAGRAM.md` | 팀 | Mermaid로 정상, 잘못된 PIN, 재연결, 동시 공개 시퀀스 |
+| D5 | `docs/design/05_ERD.md` | 팀 | Mermaid ERD, 엔터티·키·관계·수명, 저장하지 않는 PII 표시 |
+=======
+[Andrej Karpathy의 LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 패턴을 사용한다.
+
+```text
+research/raw/       # 수집한 원문: 추가만 가능, 수정 금지
+wiki/               # 에이전트가 관리하는 요약·연결·충돌
+  index.md           # 전체 문서 링크와 한 줄 요약
+  claims.md          # Claim ID, 상태, 근거, 반영 위치
+  log.md             # 날짜별 ingest/query/lint 기록
+AGENTS.md            # 구조와 작업 규칙
+```
+
+주장 상태는 `VERIFIED`, `ASSUMPTION`, `EXPERIMENT`, `CONFLICT`, `REJECTED` 중 하나다.
+
+- 원문마다 제목, 발행자, URL, 발행일, 확인일, 버전/커밋, 담당자를 기록한다.
+- 원문은 수정하지 않는다. 요약과 해석은 `wiki/`에 쓴다.
+- 숫자, 실제 인용, API 동작, 시장, 가격, 원가에는 Claim ID와 출처를 붙인다.
+- 실제 인터뷰가 아닌 문장을 인용부호 안에 넣지 않는다.
+- 5명이 각 1명씩 5분 인터뷰를 진행해 최소 5개의 동의받은 익명 인용을 확보한다.
+- 새 소스를 ingest할 때 관련 위키 페이지, `index.md`, `claims.md`, `log.md`를 같이 갱신한다.
+- 통합 전 `CONFLICT`, 오래된 수치, 고아 문서, 문서-UI 불일치를 lint한다.
+
+먼저 검증할 질문:
+
+1. 공식 심사 기준, 제출 형식, 발표 시간, 팀 인원 제한은 무엇인가?
+2. 양력/음력, 윤달, 자정 경계, 출생시각 모름은 어떻게 처리하는가?
+3. 후보 사주 라이브러리가 KASI 기준 테스트 사례와 일치하는가?
+4. 22장 하우스 순위와 문구가 직관적이고 불쾌감·낙인을 만들지 않는가?
+5. 5~15명 현장에서 입장부터 공개까지 3분 안에 끝나는가?
+6. 누가 언제 얼마를 낼 의사가 있는가?
+7. 원본 생년월일 미저장이 네트워크·로그·DB 검사로 증명되는가?
+
+기준 원문:
+
+- 행사: [GDG Campus Korea](https://gdg.community.dev/gdg-campus-korea/), [EventUs](https://event-us.kr/gdgcampuskorea/event/131744)
+- 팀: [hack-the-beat-c3](https://github.com/hack-the-beat-c3)
+- 최소 개발: [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail), 2026-08-29 확인 `main` `2ed6c52c9d7e5e56942508591085fd45dea277d3`
+- 지식 구조: [Karpathy LLM Wiki gist](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f), 2026-08-29 확인
+- 음양력: [한국천문연구원 음양력 정보](https://astro.kasi.re.kr/life/pageView/31)
+- 타로: [V&A, A history of tarot cards](https://www.vam.ac.uk/articles/tarot-cards)
+- 개인정보: [개인정보 보호법](https://www.law.go.kr/LSW/lsInfoP.do?ancYnChk=&chrClsCd=010202&efYd=20251002&lsiSeq=270351&urlMode=lsInfoP)
+- 사행성 검토: [게임산업진흥에 관한 법률](https://www.law.go.kr/LSW/lsInfoP.do?lsId=010196)
+
+법률 자료는 위험 확인용이며 법률 자문이 아니다.
+
+---
+
+## 4. 5대 설계문서: 5명이 1개씩 작성
+
+담당자는 전부 미정이다. 첫 킥오프에서 팀이 합의해 중복 없이 **5명에게 1인 1문서**를 배정하고 아래 `담당자`를 실명으로 바꾼다. 각 작성자는 구현 담당과 반드시 교차 리뷰한다.
+
+| 번호 | 필수 파일 | 담당자 | 필수 내용 | 완료 증거 |
+|---|---|---|---|---|
+| D1 | `docs/design/01_USE_CASE_SPEC.md` | **미정** | 액터, 사전/사후조건, 기본·예외 흐름, 생성→입장→공개, 수용 기준 | 각 유스케이스의 E2E 링크 |
+| D2 | `docs/design/02_COMPONENT_DESIGN.md` | **미정** | 클라이언트/서버 컴포넌트, 책임, 상태 소유권, 의존 방향, 배포 구성 | 실제 소스 경로와 일치 |
+| D3 | `docs/design/03_INTERFACE_DEFINITION.md` | **미정** | 화면 계약, API/이벤트 이름, 요청·응답·오류, 실시간 메시지, 버전 | 샘플 payload와 네트워크 캡처 |
+| D4 | `docs/design/04_SEQUENCE_DIAGRAM.md` | **미정** | Mermaid로 정상, 잘못된 PIN, 재연결, 동시 공개 시퀀스 | 실제 런타임 순서와 비교 |
+| D5 | `docs/design/05_ERD.md` | **미정** | Mermaid ERD, 엔터티·키·관계·수명, 저장하지 않는 PII 표시 | 실제 schema 또는 상태 모델과 일치 |
+
+배정표:
+
+```text
+D1 유스케이스 명세서: 김경민 (@kyoungmin24)
+D2 컴포넌트 설계서:   미정
+D3 인터페이스 정의서: 미정
+D4 시퀀스 다이어그램: 미정
+D5 ERD:               미정
+```
+
+설계문서 하드룰:
+
+- 파일명과 번호는 바꾸지 않는다.
+- 각 문서 상단에 `Owner`, `Reviewer`, `Status`, `Related ADR`, `Related Claims`, `Last Verified Commit`을 둔다.
+- 코드에 없는 컴포넌트·API·테이블을 완료된 것처럼 쓰지 않는다.
+- 변경 시 코드와 관련 설계문서를 같은 변경 단위에서 갱신·커밋·푸시한다.
+- ERD는 영속 DB가 없는 MVP라도 작성한다. `Room`, `Participant`, `DerivedProfile`, `Card`, `Deal/Result`의 논리 모델과 TTL을 나타내고 원본 생년월일은 `NOT STORED`로 표시한다.
+
+### 공통 보조 산출물
+
+- `docs/RESEARCH.md`: 공식 규정, 인터뷰, 도메인/법률/시장 팩트체크와 미검증 목록
+- `docs/QA_EVIDENCE.md`: 테스트 표, URL, viewport, 시각, commit SHA, 스크린샷/영상, 콘솔·네트워크 결과
+- `docs/PITCH_SCRIPT.md`: 문제→인용→라이브 데모→GTM→수익/시장/원가→팀 순서의 발표 대본
+- `slides/PITCH_DECK.md`: Marp 8~10장. 모든 숫자·인용에 Claim ID를 표시하고 실제 화면만 사용
+
+슬라이드 순서: 훅 → 실제 문제/인용 → 3단계 데모 → 1인 1장 규칙 → 오행 케미/공정성 → GTM → 수익·시장·원가 → 차별점 → 증거/팀/마무리.
+
+최종 파일에는 `TBD`, 가짜 인용, 출처 없는 숫자, 깨진 링크, 미구현 기능이 없어야 한다.
+
+---
+
+## 5. 내부 12개 평가 계약
+
+### A. 작동·완성도 34%
+
+- **A1 40%**: 생성 → 게스트 참여/1장 배분 → 동시 공개/리캡 완주.
+- **A2 20%**: 모바일·데스크톱 콘솔 오류 0, 처리되지 않은 예외 0, 정상 플로우 네트워크 실패 0.
+- **A3 25%**: 5대 설계문서, 대본, 슬라이드, 코드가 일치.
+- **A4 15%**: 로딩, 빈 상태, 잘못된 PIN, 만원 룸, 중복 입장, 재연결, 출생시각 모름, 오류 처리.
+
+### B. GTM 33%
+
+- **B1 25%**: 구체적 파티 상황과 실제 인터뷰 인용.
+- **B2 25%**: 최초 채널의 모수, 실행 주체, 날짜 중 최소 2개와 근거.
+- **B3 30%**: 호스트·게스트 동반 참여와 공유 리캡의 실제 동작.
+- **B4 20%**: 구현된 재초대/후속 리캡만 주장. 미구현 익일 알림은 문서에서 삭제.
+
+### C. 비즈니스 33%
+
+- **C1 30%**: 지불자, 시점, 금액, 실제 가격 질문 결과.
+- **C2 20%**: 출처 있는 `고객 수 × 연간 사용 횟수 × 가격` 상향식 계산.
+- **C3 30%**: 카카오톡, 인스타그램, Kahoot 등 구체 대체재와 기능 비교.
+- **C4 20%**: 공식 가격표/로그에 근거한 건당 원가와 총마진.
+
+기존 예시 `150,000명`, `연 5.2회`, `₩4,900`, `SOM 38.22억`, `COGS ₩32.7`, `99.3%`는 검증 전 가설이다. 근거 없이 사용하지 않는다.
+
+---
+
+## 6. Ponytail 개발 원칙과 품질
+
+[Ponytail](https://github.com/DietrichGebert/ponytail)의 첫 번째로 충분한 해법에서 멈춘다.
+
+1. 필요 없으면 만들지 않는다.
+2. 코드베이스에 있으면 재사용한다.
+3. 표준 라이브러리를 사용한다.
+4. 브라우저 네이티브 기능을 사용한다.
+5. 이미 설치된 의존성을 사용한다.
+6. 한 줄이면 한 줄로 한다.
+7. 그 뒤에만 동작하는 최소 코드를 쓴다.
+
+- 새 프레임워크·상태관리·UI 의존성을 함부로 추가하지 않는다.
+- 개인정보, 신뢰 경계 검증, 오류 방지, 접근성은 줄이지 않는다.
+- 비자명한 로직에는 가장 작은 실행 가능한 테스트를 남긴다.
+- 카드 셔플은 Web Crypto 기반 Fisher–Yates를 사용하고 중복·누락을 테스트한다.
+- 서버 권위 상태는 `room phase`, `participants`, `deck/deal`, `result`로 제한한다.
+- 모바일 390×844, 데스크톱 1440×900, 호스트+게스트 2개 이상 세션에서 검증한다.
+- 키보드 조작, label, 대비, `prefers-reduced-motion`을 지원한다.
+
+---
+
+## 7. Git·커밋·푸시·ADR 네이밍
+
+### 모든 변경
+
+- `git status` 확인 → 관련 테스트 → `git diff --check` → 필요한 파일만 stage → commit → 현재 브랜치 push.
+- 한 커밋은 한 목적만 가진다. `main` 직접 작업, 강제 푸시, 타인 변경 덮어쓰기, secret 커밋을 금지한다.
+- 푸시 실패를 성공으로 보고하지 않는다. 오류, 브랜치, 복구 명령을 공유한다.
+
+브랜치:
+
+```text
+feat/adr-0001-one-card-flow
+fix/adr-0007-reconnect-state
+docs/adr-0010-sequence-diagram
+chore/adr-0012-deploy
+```
+
+커밋:
+
+```text
+feat(guest): add one-card draw flow [ADR-0001]
+fix(realtime): preserve deal on reconnect [ADR-0007]
+docs(design): define reveal sequence [ADR-0010]
+```
+
+ADR 파일은 `docs/adr/ADR-NNNN-kebab-case-title.md`로 한다. 번호는 증가만 하고 재사용하지 않는다.
+
+```markdown
+# ADR-NNNN: 제목
+- Status: Proposed | Accepted | Superseded | Rejected
+- Date: YYYY-MM-DD
+- Owners: DRI, Reviewer
+- Related: issue/PR/docs/claims
+## Context
+## Decision
+## Alternatives
+## Consequences
+## Verification / Rollback
+```
+
+ADR 선행 대상: 제품 범위, 카드 배분/순위, 사주 엔진, 실시간 방식, 데이터 저장·삭제, 새 의존성/스택, 배포, 가격, 공식 규정 해석. 오탈자와 명백한 버그 수정은 새 ADR 대신 관련 ADR을 커밋에 참조한다.
+
+주요 분기 순서: `Proposed ADR → 리뷰 승인 → 브랜치 생성·push → 최소 구현·테스트 → 설계문서/위키 갱신 → commit·push → 증거 기록`.
+
+---
+
+## 8. 제출 게이트
+
+다음이 모두 참일 때만 `READY`다.
+
+- 공식 규정 스냅샷과 운영 측 지정 5인의 GitHub 접근 확인 완료
+- 5대 설계문서 담당자 5명 배정, 리뷰 및 구현 대조 완료
+- 리서치, QA 증거, 발표 대본, 슬라이드 완성
+- 배포 URL에서 3단계 플로우 완주
+- 호스트·게스트 동기화와 새로고침/재연결 통과
+- 모바일·데스크톱 콘솔 오류 및 정상 플로우 실패 요청 0
+- 원본 생년월일이 네트워크·로그·DB·분석 도구에 남지 않음
+- 공유 덱에서 참가자당 정확히 1장, 중복 0
+- QA 문서에 URL, 시각, viewport, commit SHA, 캡처 첨부
+- 설계문서·대본·슬라이드·UI의 기능, 숫자, 카피 일치
+- 모든 작업 브랜치 commit·push 완료, `git status` clean
+
+시간이 부족하면 기능을 더하지 말고 비범위로 옮긴다. **동작하는 1인 1장 파티 플로우와 브라우저 증거가 최우선이다.**
+>>>>>>> feat/adr-0002-elemental-chemistry
