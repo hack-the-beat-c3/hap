@@ -51,7 +51,7 @@
 - 검증일: 2026-08-29
 - 검증자: Claude Code(PM) — Playwright(로컬 headless brave-browser)로 직접 구동
 - 대상 URL: http://localhost:5173/ (로컬 `pnpm run dev`에 `src/consent/ConsentFlow`를 임시로 마운트해 검증 — 이 마운트는 커밋하지 않았고 `src/App.tsx`는 검증 직후 원상복구함; 실제 앱 통합은 팀 결정 대기)
-- Commit SHA: (PR #4 최신 커밋, `feat(consent): add consent and birthdate input flow [ADR-0004]`)
+- Commit SHA: `4e826b9` (branch `feat/adr-0004-consent-birthdate-flow`, PR #4)
 - 관련 ADR: [ADR-0004](adr/ADR-0004-consent-birthdate-flow.md) (Status: Accepted)
 
 ### 자동 테스트
