@@ -29,7 +29,7 @@
 | 운영 측 등록 표기 | 이메일 | GitHub | R&R | 확인 사항 |
 |---|---|---|---|---|
 | 이무원 | lmw.hpc@gmail.com | [lmwmason](https://github.com/lmwmason) | **미정** | GitHub 확인 완료 |
-| 김경민 | wwwx2794@gmail.com | 확인 필요 | **미정** | GitHub 계정 확인 필요 |
+| 김경민 | wwwx2794@gmail.com | [kyoungmin24](https://github.com/kyoungmin24) | **오행 보완 케미 & 1:1 QR 궁합 미션 DRI** | GitHub 확인 완료 |
 | 김종한 | 확인 필요 | 확인 필요 | **미정** | 이메일·GitHub 확인 필요 |
 | 김태환 / 김형준 | pro.cloud.kim@gmail.com | [procloudkim](https://github.com/procloudkim) | **미정** | 최종 등록 이름 표기 확인 필요 |
 | 5번째 팀원 | 확인 필요 | 확인 필요 | **미정** | 이름·이메일·GitHub 확인 필요 |
@@ -144,7 +144,7 @@ AGENTS.md            # 구조와 작업 규칙
 배정표:
 
 ```text
-D1 유스케이스 명세서: 미정
+D1 유스케이스 명세서: 김경민 (@kyoungmin24)
 D2 컴포넌트 설계서:   미정
 D3 인터페이스 정의서: 미정
 D4 시퀀스 다이어그램: 미정

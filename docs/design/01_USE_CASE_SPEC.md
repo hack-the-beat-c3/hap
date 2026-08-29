@@ -1,11 +1,11 @@
 # D1: 유스케이스 명세서 (Use Case Specification)
 
-- **Owner**: 미정 (팀 합의 후 배정)
-- **Reviewer**: 미정
-- **Status**: Draft (오행 보완 케미 기능 반영)
-- **Related ADR**: ADR-0002
+- **Owner**: 김경민 (@kyoungmin24)
+- **Reviewer**: 팀 Reviewer
+- **Status**: Completed (오행 보완 케미 및 1:1 QR 매칭 구현 반영)
+- **Related ADR**: ADR-0002, ADR-0003
 - **Related Claims**: 없음
-- **Last Verified Commit**: 07a88de
+- **Last Verified Commit**: bd5e97d
 
 ---
 
