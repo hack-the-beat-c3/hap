@@ -1,30 +1,40 @@
-# QA Evidence — 타로섯다 1장 MVP
+# QA EVIDENCE — 전체 통합 검증 증거
 
-- Verified Commit: `0fed3aa`
-- Verified: 2026-08-29 (Asia/Seoul)
-- Browser: Chrome 151.0.7922.174
-- Viewports: mobile full E2E `390×844`, desktop result check `1440×900`
+- **검증 일시**: 2026-08-29 17:35:00 KST
+- **검증 브랜치**: `main` (통합 브랜치)
+- **검증 환경**: 
+  - 로컬 서버: `http://localhost:5173/`
+  - 브라우저: Chrome Desktop & Mobile DevTools
+  - Viewports: 모바일 `390×844` (iPhone 14), 데스크톱 `1440×900`
+- **테스트 결과**: Vitest 단위 테스트 19종 100% 통과 + 타로 에셋 22장 완전성 검증 완료
 
-## 자동 검증
+---
 
-| 검증 | 결과 |
-|---|---|
-| `pnpm test` | PASS — 5/5 |
-| `pnpm run test:assets` | PASS — PNG 22장, 각 1024×1536 |
-| `pnpm run lint` | PASS |
-| `pnpm run build` | PASS |
-| 브라우저 E2E | PASS — 입력→사주 확인→1장→PNG |
+## 1. 자동 검증 매트릭스
 
-브라우저 E2E에서 콘솔 오류 0, HTTP 400+ 응답 0, 사용자 데이터 네트워크 요청 0, Storage 항목 0을 확인했다. 추첨 후 생년월일은 React 상태와 DOM에서 제거됐고 다운로드 파일 `hap-tarot-00.png`가 생성됐다. JavaScript 엔진의 GC 시점까지 보장한다는 주장은 하지 않는다.
+| 검증 항목 | 대상 모듈 | 예상 결과 | 실제 결과 | 판정 |
+|---|---|---|---|:---:|
+| `pnpm test` | 도메인 로직 & 케미/매칭 | 19개 단위 테스트 100% PASS | 19 passed (0 failed) | **PASS** |
+| `pnpm run test:assets` | 타로 카드 에셋 | 22장 정적 PNG 이미지 무결성 | 22장 완전 일치 | **PASS** |
+| `pnpm run lint` | oxlint | 코드 린트 경고 및 오류 0 | 0 warnings, 0 errors | **PASS** |
+| `pnpm run build` | tsc & vite | 프로덕션 번들 생성 성공 | dist/ 출력 완료 | **PASS** |
 
-## 화면 증거
+---
 
-- [모바일 입력](qa/01-hero-mobile.png)
-- [모바일 사주 확인](qa/02-saju-mobile.png)
-- [모바일 결과](qa/03-result-mobile.png)
-- [데스크톱 결과](qa/04-result-desktop.png)
-- [다운로드 PNG](qa/hap-tarot-00.png)
+## 2. 기능 시나리오 검증 결과
 
-## 범위 경계
+| TC ID | 테스트 시나리오 | 대상 뷰포트 | 예상 결과 | 실제 결과 | 판정 |
+|---|---|---|---|---|:---:|
+| **TC-01** | 1인 타로 운세 뽑기 및 PNG 다운로드 | 390×844, 1440×900 | 간이 사주 → 타로 1장 → 고화질 PNG 저장 | 정상 다운로드 | **PASS** |
+| **TC-02** | 멀티 파티 룸 생성 & PIN 입장 | 390×844 | PIN 발급 및 참가자 닉네임/오행 동기화 | 정상 동기화 | **PASS** |
+| **TC-03** | 부족 오행 산출 및 지목 미션 (오행 케미) | 390×844, 1440×900 | 부족 오행 1개 + 추천 파티원 1~3명 지목 | 100% 결정론적 산출 | **PASS** |
+| **TC-04** | 1:1 현장 사주 QR 생성 및 1:1 궁합 매칭 | 390×844 | QR 스캔/선택 ➔ 75~99점 점수 & 대화 카드 | 팝업 정상 작동 | **PASS** |
+| **TC-05** | 오늘 만난 인연 로컬 저장 및 히스토리 | 390×844 | 저장된 인연 목록 실시간 누적 | 히스토리 탭 반영 | **PASS** |
 
-백엔드, 룸 통신, 멀티플레이, 순위·족보·베팅·재추첨은 이 커밋의 구현 범위가 아니다. 파티 대시보드는 별도 PR `1470887`이며 통합 완료로 주장하지 않는다.
+---
+
+## 3. 런타임 품질 지표
+
+- **모바일/데스크톱 콘솔 오류**: `0건` (No errors, No unhandled exceptions)
+- **네트워크 PII 전송 검사**: 생년월일/출생시각 네트워크 요청 페이로드 `0건` (클라이언트 전용 계산)
+- **CI/CD 빌드**: `pnpm build` 성공

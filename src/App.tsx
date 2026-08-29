@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { derive } from './lib/ohaeng'
@@ -353,3 +354,17 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
     </div>
   )
 }
+=======
+import { PartyChemistryPlayground } from './components/chemistry';
+import './App.css';
+
+function App() {
+  return (
+    <main className="app-main">
+      <PartyChemistryPlayground />
+    </main>
+  );
+}
+
+export default App;
+>>>>>>> feat/adr-0002-elemental-chemistry

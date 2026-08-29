@@ -1,0 +1,210 @@
+/* ==========================================================================
+   1-on-1 Elemental Synergy Match Component Styles
+   ========================================================================== */
+
+.match-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.match-modal-container {
+  background-color: var(--hap-bg-card, #1e293b);
+  border: 1px solid var(--hap-border, #475569);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  color: var(--hap-text-primary, #f8fafc);
+  position: relative;
+}
+
+.match-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.75rem;
+}
+
+.match-modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.match-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.3rem;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  gap: 0.3rem;
+}
+
+.match-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--hap-text-secondary, #94a3b8);
+  padding: 0.5rem 0.25rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.match-tab-btn--active {
+  background: #3b82f6;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* My QR View */
+.my-qr-box {
+  text-align: center;
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.my-qr-canvas {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* 1:1 Match Result Card */
+.synergy-card {
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 18px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.synergy-versus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.synergy-participant-pill {
+  background: var(--hap-bg-subcard, #334155);
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 90px;
+}
+
+.synergy-score-wrap {
+  margin: 1.25rem 0;
+}
+
+.synergy-score-number {
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fbbf24 0%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+}
+
+.synergy-score-label {
+  font-size: 0.85rem;
+  color: var(--hap-text-secondary, #94a3b8);
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+
+.synergy-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #fef08a;
+  margin: 0.5rem 0;
+}
+
+.synergy-tagline {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  margin: 0 0 1rem 0;
+}
+
+.synergy-analysis-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #f1f5f9;
+  text-align: left;
+  margin-bottom: 1.25rem;
+}
+
+.synergy-topics-box {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: left;
+  margin-bottom: 1.25rem;
+}
+
+.synergy-topics-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #fbbf24;
+  margin: 0 0 0.5rem 0;
+}
+
+.synergy-topic-item {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  margin: 0.35rem 0;
+  line-height: 1.4;
+}
+
+/* History */
+.connection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.connection-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--hap-bg-subcard, #334155);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
