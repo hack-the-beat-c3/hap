@@ -14,7 +14,10 @@ import {
   type RoomState,
 } from './lib/room'
 import { ChemistryMatrix, ShareCard } from './components/Recap'
+import { TarotSoloFlow } from './components/TarotSoloFlow'
+import { PartyChemistryPlayground } from './components/chemistry'
 
+type AppMode = 'party' | 'solo_tarot' | 'chemistry_lab'
 type Role = 'landing' | 'host' | 'guest'
 
 // URL의 ?pin= 로 게스트 입장 여부 판단.
@@ -23,43 +26,86 @@ function readPin(): string | null {
 }
 
 export default function App() {
+  const [mode, setMode] = useState<AppMode>(() => (readPin() ? 'party' : 'party'))
   const [role, setRole] = useState<Role>(() => (readPin() ? 'guest' : 'landing'))
   const [pin, setPin] = useState<string>(() => readPin() ?? '')
 
-  if (role === 'landing')
-    return (
-      <Shell>
-        <Landing
-          onHost={() => {
-            const p = makePin()
-            setPin(p)
-            setRole('host')
-          }}
-          onJoin={(p) => {
-            setPin(p)
-            setRole('guest')
-          }}
-        />
-      </Shell>
-    )
-
   return (
-    <Shell>
-      <Party pin={pin} isHost={role === 'host'} />
-    </Shell>
+    <div className="global-app-container">
+      {/* Top Global Mode Navigation Bar */}
+      <nav className="global-nav" aria-label="메인 모드 선택">
+        <div className="global-nav__inner">
+          <div className="global-nav__brand">🎋 HAP (합)</div>
+          <div className="global-nav__tabs">
+            <button
+              type="button"
+              className={`global-nav__tab ${mode === 'party' ? 'global-nav__tab--active' : ''}`}
+              onClick={() => setMode('party')}
+            >
+              🎉 멀티 파티 룸
+            </button>
+            <button
+              type="button"
+              className={`global-nav__tab ${mode === 'solo_tarot' ? 'global-nav__tab--active' : ''}`}
+              onClick={() => setMode('solo_tarot')}
+            >
+              🃏 오늘의 타로 한 장
+            </button>
+            <button
+              type="button"
+              className={`global-nav__tab ${mode === 'chemistry_lab' ? 'global-nav__tab--active' : ''}`}
+              onClick={() => setMode('chemistry_lab')}
+            >
+              ⚡ 오행 케미 & 1:1 QR
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mode Views */}
+      {mode === 'solo_tarot' && <TarotSoloFlow />}
+
+      {mode === 'chemistry_lab' && (
+        <main className="app-main">
+          <PartyChemistryPlayground />
+        </main>
+      )}
+
+      {mode === 'party' && (
+        <Shell>
+          {role === 'landing' ? (
+            <Landing
+              onHost={() => {
+                const p = makePin()
+                setPin(p)
+                setRole('host')
+              }}
+              onJoin={(p) => {
+                setPin(p)
+                setRole('guest')
+              }}
+            />
+          ) : (
+            <Party pin={pin} isHost={role === 'host'} onExit={() => setRole('landing')} />
+          )}
+        </Shell>
+      )}
+    </div>
   )
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="app">
+    <div className="app">
       <header className="topbar">
-        <span className="brand">🔮 사주·궁합 파티</span>
-        <span className="tag">1인 1장 · 오늘의 최강 운세</span>
+        <span className="brand">🎋 HAP · 타로섯다 파티</span>
+        <span className="tag">생년월일 미저장</span>
       </header>
       {children}
-      <footer className="foot">결과는 재미로 즐기는 엔터테인먼트예요 · 원본 생년월일은 이 기기 밖으로 나가지 않아요</footer>
-    </main>
+      <footer className="foot">
+        파티용 엔터테인먼트 · 원본 생년월일 서버 미전송 · Web Crypto 공정 셔플
+      </footer>
+    </div>
   )
 }
 
@@ -70,315 +116,240 @@ function Landing({
   onHost: () => void
   onJoin: (pin: string) => void
 }) {
-  const [pin, setPin] = useState('')
+  const [pinInput, setPinInput] = useState('')
+  const [err, setErr] = useState('')
+
+  const handleJoin = (e: React.FormEvent) => {
+    e.preventDefault()
+    const clean = pinInput.trim().toUpperCase()
+    if (!/^[A-Z0-9]{6}$/.test(clean)) {
+      setErr('PIN은 6자리 영문 대문자/숫자입니다.')
+      return
+    }
+    onJoin(clean)
+  }
+
   return (
-    <section className="landing">
-      <h1>오늘 파티, 누가 최강 운세?</h1>
-      <p className="lede">생년월일로 사주 오행을 뽑고, 다 같이 타로 한 장씩 — 현장에서 바로 겨뤄요.</p>
-      <div className="cards">
-        <div className="panel">
-          <h2>파티 열기</h2>
-          <p>호스트가 되어 PIN·QR로 친구를 초대해요.</p>
-          <button type="button" className="cta" onClick={onHost}>
-            파티 만들기
-          </button>
-        </div>
-        <div className="panel">
-          <h2>파티 참여</h2>
-          <p>호스트가 알려준 4자리 PIN을 입력하세요.</p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (/^\d{4}$/.test(pin)) onJoin(pin)
-            }}
-          >
-            <input
-              inputMode="numeric"
-              pattern="\d{4}"
-              maxLength={4}
-              placeholder="0000"
-              aria-label="파티 PIN 4자리"
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-            />
-            <button type="submit" className="cta" disabled={!/^\d{4}$/.test(pin)}>
-              입장
-            </button>
-          </form>
-        </div>
+    <main className="landing">
+      <div className="hero">
+        <h1>오늘 파티의<br />최강 운세를 가린다</h1>
+        <p className="sub">생년월일로 오행 케미를 보고, 1인 1장 타로로 승부!</p>
       </div>
-    </section>
+
+      <div className="card action-card">
+        <button type="button" className="cta" onClick={onHost}>
+          🎉 파티 룸 만들기 (호스트)
+        </button>
+
+        <div className="divider">또는 PIN으로 참여</div>
+
+        <form onSubmit={handleJoin} className="join-form">
+          <input
+            type="text"
+            className="input-pin"
+            placeholder="6자리 PIN 입력"
+            maxLength={6}
+            value={pinInput}
+            onChange={(e) => {
+              setPinInput(e.target.value)
+              setErr('')
+            }}
+          />
+          <button type="submit" className="btn-join">입장</button>
+        </form>
+        {err && <p className="err-text" role="alert">{err}</p>}
+      </div>
+    </main>
   )
 }
 
-function Party({ pin, isHost }: { pin: string; isHost: boolean }) {
-  const [state, setState] = useState<RoomState>(() => newRoom(pin))
-  const [me, setMe] = useState<Participant | null>(null)
-  const [error, setError] = useState('')
+function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?: () => void }) {
+  const [state, setState] = useState<RoomState | null>(null)
+  const [myId, setMyId] = useState<string>('')
+  const [nickname, setNickname] = useState('')
+  const [birth, setBirth] = useState('')
+  const [time, setTime] = useState('')
+  const [noTime, setNoTime] = useState(false)
+  const [joined, setJoined] = useState(false)
+  const [copied, setCopied] = useState(false)
+
   const chanRef = useRef<RoomChannel | null>(null)
 
-  const roomUrl = useMemo(
-    () => `${location.origin}${location.pathname}?pin=${pin}`,
-    [pin],
-  )
-
   useEffect(() => {
-    const chan = new RoomChannel(pin, (s) => setState(s))
-    chanRef.current = chan
-    // 게스트는 최신 상태를 요청. 호스트는 초기 권위 상태를 방송.
-    if (isHost) chan.publish(newRoom(pin))
-    else chan.requestSync()
-    return () => chan.close()
+    const ch = new RoomChannel(pin, (room) => {
+      setState(room)
+    })
+    chanRef.current = ch
+
+    // 호스트가 처음 만들 때 룸 초기화
+    if (isHost) {
+      newRoom(pin)
+    }
+
+    return () => {
+      ch.close()
+    }
   }, [pin, isHost])
 
-  // 내 ready/입장 여부를 항상 최신 state에서 재확인(재연결 안전).
-  const myId = me?.id
-  const meInState = myId ? state.participants.find((p) => p.id === myId) ?? null : null
+  const handleJoin = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!nickname.trim()) return
 
-  function submitBirth(form: BirthForm) {
-    setError('')
-    const prof = derive(form.birth)
+    const ohaeng = derive(birth, noTime ? null : time)
     const p: Participant = {
       id: crypto.randomUUID(),
-      nickname: form.nickname.trim(),
-      element: prof.yearElement,
-      ready: false,
+      nickname: nickname.trim(),
+      ohaeng,
+      isHost,
+      ready: true,
+      card: null,
     }
+
     try {
-      const next = join(state, { id: p.id, nickname: p.nickname, element: p.element })
-      setMe(p)
-      publish(next)
-    } catch (e) {
-      setError((e as Error).message)
+      join(pin, p)
+      setMyId(p.id)
+      setJoined(true)
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : '입장 실패')
     }
   }
 
-  // 게스트는 호스트에게 상태 변경을 반영시켜야 하지만, MVP 단일-기기 데모에서는
-  // BroadcastChannel로 모두가 같은 채널을 보므로 마지막 발행이 권위가 된다.
-  // ponytail: 진짜 다기기라면 서버 권위 필요(known ceiling, ADR 대상).
-  function publish(next: RoomState) {
-    setState(next)
-    chanRef.current?.publish(next)
+  const handleReveal = () => {
+    reveal(pin)
   }
 
-  function toggleReady() {
-    if (!meInState) return
-    publish(setReady(state, meInState.id, !meInState.ready))
+  const copyLink = () => {
+    const url = `${location.origin}${location.pathname}?pin=${pin}`
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
-  function doReveal() {
-    setError('')
-    try {
-      publish(reveal(state))
-    } catch (e) {
-      setError((e as Error).message)
-    }
-  }
+  const me = state?.participants.find((p) => p.id === myId)
+  const isAllReady = (state?.participants.length ?? 0) >= 2 && state?.participants.every((p) => p.ready)
 
-  const allReady =
-    state.participants.length >= 2 && state.participants.every((p) => p.ready)
-
-  // 아직 입장 전 → 생년월일 입력
-  if (!meInState && state.phase === 'lobby')
-    return (
-      <BirthEntry pin={pin} isHost={isHost} onSubmit={submitBirth} error={error} />
-    )
-
-  if (state.phase === 'revealed')
-    return <Reveal state={state} roomUrl={roomUrl} myId={myId} />
-
-  // 로비
   return (
-    <section className="lobby">
-      <div className="pin-row">
+    <div className="party-room">
+      <div className="room-header">
         <div>
-          <span className="pin-label">PIN</span>
-          <span className="pin-big">{pin}</span>
+          <span className="room-label">ROOM PIN</span>
+          <span className="room-pin">{pin}</span>
         </div>
-        {isHost && <Qr url={roomUrl} />}
-      </div>
-      <p className="join-hint">
-        친구는 이 링크로 입장: <code className="url">{roomUrl}</code>
-      </p>
-
-      <h2>대기실 ({state.participants.length}/{MAX_PARTICIPANTS})</h2>
-      <ul className="players">
-        {state.participants.map((p) => (
-          <li key={p.id} className={p.ready ? 'ready' : ''}>
-            <span>{p.nickname}</span>
-            <span className="el">{p.element}</span>
-            <span className="status">{p.ready ? '✅ 준비' : '⏳ 대기'}</span>
-          </li>
-        ))}
-      </ul>
-
-      {meInState && (
-        <button type="button" className="cta" onClick={toggleReady}>
-          {meInState.ready ? '준비 취소' : '준비 완료'}
-        </button>
-      )}
-
-      {isHost && (
-        <button
-          type="button"
-          className="cta reveal"
-          onClick={doReveal}
-          disabled={state.participants.length < 2}
-          title={allReady ? '' : '전원 준비되면 공개하는 걸 추천해요'}
-        >
-          🎴 카드 공개! {!allReady && state.participants.length >= 2 ? '(아직 준비 안 된 사람 있음)' : ''}
-        </button>
-      )}
-      {error && <p className="err">{error}</p>}
-    </section>
-  )
-}
-
-// ── 생년월일 입력 ────────────────────────────────
-interface BirthForm {
-  nickname: string
-  birth: { year: number; month: number; day: number; hour?: number }
-}
-
-function BirthEntry({
-  pin,
-  isHost,
-  onSubmit,
-  error,
-}: {
-  pin: string
-  isHost: boolean
-  onSubmit: (f: BirthForm) => void
-  error: string
-}) {
-  const [nickname, setNick] = useState('')
-  const [year, setYear] = useState('')
-  const [month, setMonth] = useState('')
-  const [day, setDay] = useState('')
-  const [hour, setHour] = useState('')
-  const [hourUnknown, setHourUnknown] = useState(false)
-
-  const valid =
-    nickname.trim().length > 0 &&
-    +year >= 1900 &&
-    +year <= 2100 &&
-    +month >= 1 &&
-    +month <= 12 &&
-    +day >= 1 &&
-    +day <= 31 &&
-    (hourUnknown || (+hour >= 0 && +hour <= 23 && hour !== ''))
-
-  return (
-    <section className="entry">
-      <h2>{isHost ? '파티 개설' : `파티 참여 · PIN ${pin}`}</h2>
-      <p className="lede">생년월일로 오늘의 사주 오행을 뽑아요. 원본 날짜는 이 기기 밖으로 나가지 않아요.</p>
-      <form
-        className="birth-form"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!valid) return
-          onSubmit({
-            nickname,
-            birth: {
-              year: +year,
-              month: +month,
-              day: +day,
-              hour: hourUnknown ? undefined : +hour,
-            },
-          })
-        }}
-      >
-        <label>
-          닉네임
-          <input value={nickname} maxLength={12} onChange={(e) => setNick(e.target.value)} placeholder="파티에서 보일 이름" />
-        </label>
-        <div className="row3">
-          <label>
-            연
-            <input inputMode="numeric" value={year} onChange={(e) => setYear(e.target.value.replace(/\D/g, ''))} placeholder="1998" maxLength={4} />
-          </label>
-          <label>
-            월
-            <input inputMode="numeric" value={month} onChange={(e) => setMonth(e.target.value.replace(/\D/g, ''))} placeholder="3" maxLength={2} />
-          </label>
-          <label>
-            일
-            <input inputMode="numeric" value={day} onChange={(e) => setDay(e.target.value.replace(/\D/g, ''))} placeholder="21" maxLength={2} />
-          </label>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button type="button" className="btn-sub btn-sm" onClick={copyLink}>
+            {copied ? '✅ 링크 복사됨' : '🔗 초대 링크'}
+          </button>
+          {onExit && (
+            <button type="button" className="btn-sub btn-sm" onClick={onExit}>
+              나가기
+            </button>
+          )}
         </div>
-        <label className={hourUnknown ? 'muted' : ''}>
-          출생 시각 (0-23시)
-          <input inputMode="numeric" value={hour} disabled={hourUnknown} onChange={(e) => setHour(e.target.value.replace(/\D/g, ''))} placeholder="14" maxLength={2} />
-        </label>
-        <label className="checkbox">
-          <input type="checkbox" checked={hourUnknown} onChange={(e) => setHourUnknown(e.target.checked)} />
-          출생 시각 모름 (시간주 제외 간이 해석)
-        </label>
-        <button type="submit" className="cta" disabled={!valid}>
-          {isHost ? '파티 열기' : '입장하기'}
-        </button>
-      </form>
-      {error && <p className="err">{error}</p>}
-    </section>
-  )
-}
-
-// ── 공개·리캡 ────────────────────────────────
-function Reveal({
-  state,
-  roomUrl,
-  myId,
-}: {
-  state: RoomState
-  roomUrl: string
-  myId?: string
-}) {
-  const w = winner(state)
-  return (
-    <section className="reveal-view">
-      <h1>🎉 오늘 파티의 최강 운세</h1>
-      {w && (
-        <div className="crown">
-          <div className="crown-name">👑 {w.nickname}</div>
-          <div className="crown-card">「{state.deal[w.id].name}」</div>
-          <p className="crown-fortune">{state.deal[w.id].fortune}</p>
-        </div>
-      )}
-
-      <div className="grid-cards">
-        {state.participants.map((p) => {
-          const c = state.deal[p.id]
-          return (
-            <div key={p.id} className={`mini-card${p.id === myId ? ' me' : ''}${p.id === w?.id ? ' win' : ''}`}>
-              <div className="mc-rank">#{22 - c.rank + 1}</div>
-              <div className="mc-name">{c.name}</div>
-              <div className="mc-who">{p.nickname} · {p.element}</div>
-            </div>
-          )
-        })}
       </div>
 
-      <ChemistryMatrix participants={state.participants} />
-      <ShareCard state={state} roomUrl={roomUrl} />
-    </section>
-  )
-}
+      {!joined ? (
+        <form onSubmit={handleJoin} className="card join-profile-form">
+          <h3>파티 프로필 설정</h3>
+          <p className="sub">생년월일은 오행 계산 후 저장 없이 폐기됩니다.</p>
 
-// QR: 외부 이미지 API 없이 카나리 링크만 크게 표시 + 브라우저 네이티브 복사.
-// ponytail: 로컬 QR 인코더는 의존성이 필요 → MVP는 링크 공유로 충분(known ceiling).
-function Qr({ url }: { url: string }) {
-  const [copied, setCopied] = useState(false)
-  return (
-    <button
-      type="button"
-      className="qr-copy"
-      onClick={async () => {
-        await navigator.clipboard?.writeText(url)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 1500)
-      }}
-    >
-      {copied ? '✅ 링크 복사됨' : '🔗 초대 링크 복사'}
-    </button>
+          <label>
+            <span>닉네임</span>
+            <input
+              type="text"
+              required
+              placeholder="예: 불꽃남자, 럭키비키"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+            />
+          </label>
+
+          <label>
+            <span>생년월일</span>
+            <input
+              type="date"
+              required
+              value={birth}
+              onChange={(e) => setBirth(e.target.value)}
+            />
+          </label>
+
+          <label className="time-row">
+            <span>태어난 시각 (선택)</span>
+            <input
+              type="time"
+              disabled={noTime}
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+            />
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={noTime}
+                onChange={(e) => setNoTime(e.target.checked)}
+              />
+              모름 (간이 해석)
+            </label>
+          </label>
+
+          <button type="submit" className="cta">
+            {isHost ? '방장으로 입장 & 대기' : '파티 참여하기'}
+          </button>
+        </form>
+      ) : state?.phase === 'REVEALED' ? (
+        <div className="revealed-wrap">
+          <div className="card winner-hero">
+            <span className="badge">👑 오늘 파티의 최강 운세</span>
+            <h2>{state.winnerNickname}</h2>
+            <p>메이저 타로 1장 단판 승부 최고 순위!</p>
+          </div>
+
+          <div className="card my-result-card">
+            <h3>내 운세 카드</h3>
+            {me?.card && (
+              <div className="my-card-box">
+                <span className="card-name">{me.card.name}</span>
+                <span className="card-rank">하우스 룰 {me.card.rank}위</span>
+              </div>
+            )}
+          </div>
+
+          {/* 오행 케미 매트릭스 & 공유 */}
+          <ChemistryMatrix participants={state.participants} myId={myId} />
+          <ShareCard me={me} winnerNickname={state.winnerNickname} />
+        </div>
+      ) : (
+        <div className="card waiting-room">
+          <div className="waiting-head">
+            <h3>참가자 목록 ({state?.participants.length ?? 0}/{MAX_PARTICIPANTS}명)</h3>
+            <span className="phase-badge">대기 중</span>
+          </div>
+
+          <ul className="participant-list">
+            {state?.participants.map((p) => (
+              <li key={p.id} className={`participant-item ${p.id === myId ? 'me' : ''}`}>
+                <span className="p-name">{p.nickname} {p.isHost && '👑'}</span>
+                <span className="p-ohaeng" style={{ backgroundColor: p.ohaeng.color + '22', color: p.ohaeng.color }}>
+                  {p.ohaeng.element} ({p.ohaeng.korean})
+                </span>
+                <span className="p-status">준비완료</span>
+              </li>
+            ))}
+          </ul>
+
+          {isHost ? (
+            <button
+              type="button"
+              className="cta"
+              disabled={!isAllReady}
+              onClick={handleReveal}
+            >
+              {isAllReady ? '🃏 전원 카드 일괄 공개!' : '2명 이상 준비 시 공개 가능'}
+            </button>
+          ) : (
+            <p className="waiting-msg">호스트가 카드를 일괄 공개할 때까지 대기해주세요...</p>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
