@@ -45,3 +45,40 @@
 
 - ADR-0001 Verification 표의 `ASSUMPTION` 항목(2023년 윤2월, 2025년 설날=1/29)은 KASI 직접 재확인 전이며, 이번 구현의 자동 테스트에는 사용하지 않음(엔진은 실제 라이브러리의 `setLunarDate`/`setSolarDate` 반환값으로만 판단).
 - 배포된 URL이 아직 없어 로컬 dev 서버 기준으로 검증함. 배포 후 동일 시나리오 재검증 필요.
+
+## 팀원 2 — 개인정보 동의·생년월일 입력 플로우 (ADR-0004)
+
+- 검증일: 2026-08-29
+- 검증자: Claude Code(PM) — Playwright(로컬 headless brave-browser)로 직접 구동
+- 대상 URL: http://localhost:5173/ (로컬 `pnpm run dev`에 `src/consent/ConsentFlow`를 임시로 마운트해 검증 — 이 마운트는 커밋하지 않았고 `src/App.tsx`는 검증 직후 원상복구함; 실제 앱 통합은 팀 결정 대기)
+- Commit SHA: (PR #4 최신 커밋, `feat(consent): add consent and birthdate input flow [ADR-0004]`)
+- 관련 ADR: [ADR-0004](adr/ADR-0004-consent-birthdate-flow.md) (Status: Accepted)
+
+### 자동 테스트
+
+| 명령 | 결과 |
+|---|---|
+| `pnpm run test` | 14/14 통과 (`src/consent/allowlist.test.ts` 3건 포함) |
+| `pnpm run build` | 0 TypeScript 오류 |
+| `pnpm run lint` | 통과 |
+
+### 브라우저 시나리오 (390×844)
+
+| # | 시나리오 | 콘솔 오류 | 캡처 |
+|---|---|---|---|
+| 1 | 필수 동의 미체크 상태로 "다음" 클릭 → 차단 및 사유 표시 | 0건 | `qa-evidence/2026-08-29-05-consent-blocked-mobile-390x844.png` |
+| 2 | 필수만 동의(선택 동의 거부) → 입력 화면 정상 진입 | 0건 | `qa-evidence/2026-08-29-06-consent-input-mobile-390x844.png` |
+| 3 | 양력 1998-03-20, 출생시각 모름, 닉네임 "테스트2" 입력 → 확인 화면에 그대로 표시 | 0건 | `qa-evidence/2026-08-29-07-consent-confirm-mobile-390x844.png` |
+| 4 | 확인 화면에서 "수정" 클릭 → 입력 화면으로 복귀, 닉네임 등 값 보존 확인(자동화 스크립트로 `inputValue` 검증) | 0건 | — |
+| 5 | 제출 버튼 동시 2회 클릭 → 완료 화면으로 정확히 1회만 전환(`calculateSaju` 1회 호출) | 0건 | `qa-evidence/2026-08-29-08-consent-done-mobile-390x844.png` |
+
+### 개인정보 비전송 검증
+
+- `grep -rnE "fetch\(|XMLHttpRequest|WebSocket|localStorage|sessionStorage|console\.|document\.cookie" src/consent/` → 결과 없음
+- `grep -rn "new Date(" src/consent/` → 결과 없음(오늘 날짜는 `getTodayInKST` 임포트로만 획득)
+- `buildParticipantPayload`가 만드는 객체는 `{nickname, dominantElement, elementBalance, calculationVersion}` 4개 키만 가지며, 원본 `SajuInput`/동의 상태 필드는 타입 구조상 포함될 수 없음(단위 테스트로 키 목록과 부재 필드를 확인)
+
+### 알려진 한계
+
+- `src/App.tsx` 실통합(라우팅/조합)은 팀원3·케미스트리·타로 브랜치와의 충돌 가능성 때문에 이번 범위에서 제외 — 팀 차원의 후속 결정 필요.
+- 실제 GitHub PR 리뷰(Approve)는 아직 없음, 이 세션 내 채팅 승인으로 ADR만 Accepted 처리됨.
