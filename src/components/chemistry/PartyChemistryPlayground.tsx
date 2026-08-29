@@ -5,6 +5,8 @@ import { generatePartyMission } from '../../lib/chemistry/generatePartyMission';
 import { ElementalChemistryCard } from './ElementalChemistryCard';
 import { ShareableResultCard } from './ShareableResultCard';
 import { ElementalBadge } from './ElementalBadge';
+import { MatchHubModal } from '../match';
+import type { MatchedConnection } from '../../types/match';
 import './chemistry.css';
 
 // 룸 프리셋 데이터
@@ -153,8 +155,17 @@ export const PartyChemistryPlayground: React.FC = () => {
   });
   const [myPrimary, setMyPrimary] = useState<FiveElement>('木');
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [showMatchModal, setShowMatchModal] = useState<boolean>(false);
+  const [connections, setConnections] = useState<MatchedConnection[]>([]);
   const [newGuestNickname, setNewGuestNickname] = useState<string>('');
   const [newGuestElement, setNewGuestElement] = useState<FiveElement>('金');
+
+  const handleAddConnection = (newConn: MatchedConnection) => {
+    setConnections((prev) => {
+      const filtered = prev.filter((c) => c.partnerNickname !== newConn.partnerNickname);
+      return [newConn, ...filtered];
+    });
+  };
 
   // 프리셋 변경 핸들러
   const handleSelectPreset = (key: string) => {
@@ -218,14 +229,25 @@ export const PartyChemistryPlayground: React.FC = () => {
 
   return (
     <div className="chemistry-container">
-      {/* 타이틀 */}
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+      {/* 타이틀 & 1:1 매칭 액션 바 */}
+      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
         <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: '0 0 0.5rem 0' }}>
           🎋 합(HAP) • 부족한 오행 찾기 미션
         </h1>
-        <p style={{ color: 'var(--hap-text-secondary)', margin: 0 }}>
+        <p style={{ color: 'var(--hap-text-secondary)', margin: '0 0 1rem 0' }}>
           사주 팔자 기반 파티 네트워킹 & 아이스브레이킹 오행 보완 케미 시스템
         </p>
+
+        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className="btn btn--accent"
+            style={{ fontSize: '1rem', padding: '0.6rem 1.25rem', boxShadow: '0 4px 14px rgba(245, 158, 11, 0.4)' }}
+            onClick={() => setShowMatchModal(true)}
+          >
+            ⚡ 1:1 현장 QR 사주 궁합 맞추기 {connections.length > 0 && `(${connections.length}명 만남)`}
+          </button>
+        </div>
       </div>
 
       {/* 리캡 미션 카드 */}
@@ -233,6 +255,24 @@ export const PartyChemistryPlayground: React.FC = () => {
         mission={mission}
         onOpenShareModal={() => setShowShareModal(true)}
       />
+
+      {/* 1:1 QR 매칭 모달 */}
+      {showMatchModal && (
+        <MatchHubModal
+          me={{
+            id: 'me',
+            nickname: '나 (호스트)',
+            primaryElement: myPrimary,
+            elements: myElements,
+            joinedOrder: 1,
+            isHost: true,
+          }}
+          roomParticipants={updatedParticipants}
+          connections={connections}
+          onAddConnection={handleAddConnection}
+          onClose={() => setShowMatchModal(false)}
+        />
+      )}
 
       {/* 공유 모달 */}
       {showShareModal && (
