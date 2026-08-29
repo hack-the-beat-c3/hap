@@ -2,16 +2,16 @@
 
 - Owner: 김형준 (`@procloudkim`)
 - Reviewer: 미배정
-- Status: Proposed
+- Status: Implemented — Review pending
 - Related ADR: [`ADR-0001-tarot-mvp-architecture.md`](../adr/ADR-0001-tarot-mvp-architecture.md)
 - Related Claims: 없음 — 제품 내부 설계 계약
-- Last Verified Commit: `1f9bca6`
+- Last Verified Commit: `0fed3aa`
 
 ## 1. 목적과 현재 상태
 
 사용자 한 명이 `히어로·동의·생년월일 입력 → 오늘의 간이 사주 확인 → 타로 1장 뽑기 → 카드+사주 합성 결과 → PNG 저장`을 완주하는 정적 웹을 위한 최소 컴포넌트 설계다.
 
-`Last Verified Commit`에는 React 19·TypeScript·Vite 8 기본 화면만 있다. 사주, 타로, 결과 저장은 **아직 구현되지 않았다**. 이 문서의 `Proposed`는 구현 완료 주장이 아니다.
+`Last Verified Commit`에는 React 19·TypeScript·Vite 8 기반 입력, 사주 확인, 1장 추첨, 결과와 PNG 저장이 구현돼 있다.
 
 ### 범위 하드룰
 
@@ -20,29 +20,29 @@
 - 원본 생년월일은 브라우저 메모리에서만 처리하고 서버·스토리지·로그·분석 도구로 보내지 않는다.
 - 결과는 오락용 해석이며 과학적 예측이나 의사결정 근거로 표현하지 않는다.
 
-## 2. Existing / Proposed
+## 2. 구현 상태
 
-| 영역 | Existing @ `1f9bca6` | Proposed |
-|---|---|---|
-| 웹 앱 | Vite 스타터 | React 단일 페이지 흐름 |
-| 화면 | 안내 화면·카운터 | 입력, 사주 확인/뽑기, 결과 |
-| 도메인 | 없음 | 간이 사주 파생, 22장 타로, 무가중 1장 선택 |
-| 데이터 | 없음 | 앱 번들의 정적 카드 JSON/TypeScript 데이터·WebP 이미지 |
-| 백엔드 | 없음 | 사용하지 않음 |
-| 저장 | 없음 | 앱 상태는 메모리, 결과는 Canvas PNG로 사용자 기기에 다운로드 |
+| 영역 | 구현 @ `0fed3aa` |
+|---|---|
+| 웹 앱 | React 단일 페이지 4상태 흐름 |
+| 화면 | 입력, 사주 확인/뽑기, 결과 |
+| 도메인 | 간이 사주 파생, 22장 타로, 무가중 1장 선택 |
+| 데이터 | 정적 TypeScript 카탈로그와 동일 출처 PNG 22장 |
+| 백엔드 | 사용하지 않음 |
+| 저장 | 메모리 상태와 사용자가 내려받는 Canvas PNG만 사용 |
 
-## 3. 제안 구조
+## 3. 구현 구조
 
 ```mermaid
 flowchart LR
     App[App<br/>단계·세션 상태]
-    Entry[EntryForm<br/>동의·생년월일]
-    Draw[DrawView<br/>간이 사주 확인·1장 CTA]
-    Result[ResultView<br/>카드·합성 해석]
+    Entry[App 입력 화면<br/>동의·생년월일]
+    Draw[App 확인 화면<br/>간이 사주·1장 CTA]
+    Result[App 결과 화면<br/>카드·합성 해석]
     Saju[domain/saju<br/>검증·간이 파생]
     Tarot[domain/tarot<br/>22장·Web Crypto 선택]
     Download[downloadResult<br/>Canvas·PNG]
-    Assets[(Static card data<br/>local WebP assets)]
+    Assets[(Static card data<br/>local PNG assets)]
 
     App --> Entry
     App --> Draw
@@ -59,11 +59,7 @@ flowchart LR
 
 | 컴포넌트 | 상태 | 책임 | 소유 상태 / 출력 |
 |---|---|---|---|
-| `App` | Proposed | `HERO_INPUT → SAJU_CONFIRM → DRAWING → RESULT`만 전이한다. 확인 단계까지 원본 입력을 메모리에 두고 카드 확정 시 지운다. 재뽑기 전이는 없다. | `step`, `ConsentState`, `BirthInput`, `SajuResult`, `DrawResult`, `AppError` |
-| `EntryForm` | Proposed | 히어로 카피, 필수 동의, 생년월일을 받고 형식 오류를 안내한다. | 원본 입력을 `App`에 전달 |
-| `DrawView` | Proposed | 사용자가 입력한 생년월일과 간이 사주를 확인하고 `타로카드로 오늘의 행운 1장 뽑아보기`를 한 번 실행한다. | 뽑기 잠금 상태, `TarotCard` 선택 요청 |
-| `ResultView` | Proposed | 카드 이미지·이름·일반 해설과 간이 사주를 합성한 오늘의 문구를 표시한다. 저장 실패와 무관하게 HTML 결과는 유지한다. | `DrawResult`, PNG 저장 command |
-| `AppErrorBoundary` | Proposed | 예상하지 못한 React 렌더링 오류에 개인정보가 없는 대체 화면을 보여준다. | fatal error 표시만 소유 |
+| `App` (`src/App.tsx`) | Implemented | `HERO_INPUT → SAJU_CONFIRM → DRAWING → RESULT` 전이와 입력·결과 UI를 한 파일에서 소유한다. 카드 확정 시 원본 입력을 지우고 재뽑기를 막는다. | `step`, 동의, `birthDate`, `SajuResult`, `DrawResult`, 오류 |
 
 `EntryForm`은 `<form>`, `<input type="date">`, `required`, `FormData`를 우선한다. 출생시각·양음력 등 추가 필드는 받지 않는다.
 
@@ -71,9 +67,10 @@ flowchart LR
 
 | 모듈 | 상태 | 책임 | 비책임 |
 |---|---|---|---|
-| `domain/saju.ts` | Proposed | 입력 검증, 승인된 규칙/라이브러리 호출, `SajuResult` 생성, 타로와 결합할 키워드 제공 | 원본 저장, 카드 선택, 과학적 예측 |
-| `domain/tarot.ts` | Proposed | 메이저 아르카나 22장의 ID·이름·이미지·해설·파티 문구, 무가중 1장 선택 | 순위, 족보, 가중 확률, 재뽑기, 2장 조합 |
-| `downloadResult.ts` | Proposed | 로컬 이미지·텍스트를 Canvas에 조합하고 `toBlob()`으로 PNG를 생성해 다운로드한다. `<a download>` 클릭 다음 작업 큐에서 임시 Object URL을 해제한다. | 서버 렌더링, 파일 업로드, 영구 저장 |
+| `domain/saju.ts` | Implemented | 날짜 검증, 엔터테인먼트용 `SajuResult` 생성 | 원본 저장, 카드 선택, 과학적 예측 |
+| `domain/tarot.ts` | Implemented | 카탈로그 검증과 Web Crypto 기반 무가중 1장 선택 | 순위, 족보, 가중 확률, 재뽑기, 2장 조합 |
+| `data/tarot.ts` | Implemented | 메이저 아르카나 22장의 이름·이미지·해설·파티 문구 | 추첨과 상태 관리 |
+| `downloadResult.ts` | Implemented | 로컬 이미지·텍스트를 Canvas에 조합해 PNG 다운로드 | 서버 렌더링, 파일 업로드, 영구 저장 |
 
 타로 선택은 `crypto.getRandomValues()`와 rejection sampling을 사용해 22개 index를 균등하게 만든다. 각 카드의 선택 확률은 정확히 `1/22`이다. `Math.random()`과 단순 modulo는 사용하지 않는다. 뽑기 후 `DrawResult`가 있으면 CTA를 비활성화하고 도메인 함수를 다시 호출하지 않는다.
 
@@ -101,20 +98,17 @@ flowchart LR
 
 UC 번호는 `01_USE_CASE_SPEC.md`가 확정되면 같은 커밋에서 동기화한다.
 
-## 8. 제안 파일 구조
+## 8. 실제 파일 구조
 
 ```text
 src/
   App.tsx                 # 4개 내부 상태 전이·메모리 상태·오류 경계
-  components/
-    EntryForm.tsx         # 히어로·동의·생년월일
-    DrawView.tsx          # 간이 사주 확인·1장 CTA
-    ResultView.tsx        # 카드·합성 해석·PNG 저장
+  data/tarot.ts           # 카드 22장 이름·이미지·해설
   domain/
     saju.ts               # 입력 검증·SajuResult
     tarot.ts              # 22장 정적 데이터·균등 1장 선택
   downloadResult.ts       # Canvas 합성·PNG 다운로드
-  assets/tarot/           # 22장 WebP
+public/tarot/             # 22장 PNG
 ```
 
 이 구조로 부족하다는 실제 증거가 나올 때까지 `router/`, `store/`, `hooks/`, `services/`, `repository/`, `adapter/`, `utils/`는 추가하지 않는다. 타입은 가장 가까운 모듈에 둔다.

@@ -2,7 +2,7 @@
 
 - Owner: 김형준 (`@procloudkim`)
 - Reviewer: 미배정
-- Status: Proposed
+- Status: Implemented — Review pending
 - Related ADR: [`ADR-0001`](../adr/ADR-0001-tarot-mvp-architecture.md)
 - Related Design: [`D1`](../design/01_USE_CASE_SPEC.md), [`D2`](../design/02_COMPONENT_DESIGN.md), [`D3`](../design/03_INTERFACE_DEFINITION.md), [`D4`](../design/04_SEQUENCE_DIAGRAM.md), [`D5`](../design/05_ERD.md)
 

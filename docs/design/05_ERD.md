@@ -2,12 +2,12 @@
 
 - Owner: 김형준 (`@procloudkim`)
 - Reviewer: 미배정
-- Status: Proposed
+- Status: Implemented — Review pending
 - Related ADR: [`ADR-0001-tarot-mvp-architecture.md`](../adr/ADR-0001-tarot-mvp-architecture.md)
 - Related Claims: 없음 — 제품 내부 설계 계약
-- Last Verified Commit: `1f9bca6`
+- Last Verified Commit: `0fed3aa`
 
-> 이 문서는 데이터베이스 스키마가 아니다. `1f9bca6` 기준 영속 DB는 없으며, 아래 모델은 한 페이지 세션의 React 메모리와 정적 카드 카탈로그 관계만 표현한다.
+> 이 문서는 데이터베이스 스키마가 아니다. `0fed3aa` 기준 영속 DB는 없으며, 아래 모델은 한 페이지 세션의 React 메모리와 정적 카드 카탈로그 관계만 표현한다.
 
 ## 1. 논리 관계
 
@@ -162,11 +162,9 @@ flowchart LR
 
 사주 계산 실패 시 `BirthInput`은 사용자가 수정할 수 있도록 입력 화면에만 남는다. 성공하지 않은 임의 사주나 카드 결과를 생성하지 않는다.
 
-## 6. 현재 구현과 검증 계획
+## 6. 현재 구현과 검증
 
-`1f9bca6` 기준 현재 데이터 모델 구현과 영속성은 모두 **없음**이다. 따라서 이 ERD의 모든 런타임 모델은 `Proposed`다.
-
-구현 후 다음 증거로 검증한다.
+`0fed3aa` 기준 런타임 모델은 React 메모리와 정적 카탈로그로 구현됐고 영속성은 없다. 다음 증거로 검증한다.
 
 - 실제 TypeScript 타입과 정적 카드 카탈로그 경로
 - 카탈로그 22장, ID·번호 고유성, 필수 이미지·문구 테스트

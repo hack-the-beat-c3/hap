@@ -2,10 +2,10 @@
 
 - Owner: 김형준 (`@procloudkim`)
 - Reviewer: 미배정
-- Status: Proposed
+- Status: Implemented — Review pending
 - Related ADR: [`ADR-0001-tarot-mvp-architecture.md`](../adr/ADR-0001-tarot-mvp-architecture.md)
 - Related Claims: 없음 — 제품 내부 설계 계약
-- Last Verified Commit: `1f9bca6` (Vite 스타터, 아래 기능 미구현)
+- Last Verified Commit: `0fed3aa`
 
 ## 1. 목적과 범위
 
@@ -91,7 +91,7 @@
 
 ## 4. 수용 기준
 
-| ID | Proposed 검증 기준 |
+| ID | 검증 기준 |
 |---|---|
 | `AC-01` | 필수 동의 전에는 날짜 제출과 사주 계산이 진행되지 않는다. |
 | `AC-02` | 빈 값·존재하지 않는 날짜·미래 날짜를 거부하고 오류가 입력과 연결된다. |
@@ -102,9 +102,9 @@
 | `AC-07` | PNG 다운로드가 성공하고 생년월일은 이미지에 없으며, 실패해도 HTML 결과는 유지된다. |
 | `AC-08` | Network·URL·콘솔·브라우저 Storage에 생년월일과 결과 데이터가 남지 않는다. |
 
-## 5. 구현 전 결정할 사항
+## 5. 후속 검토 사항
 
-- 간이 사주 계산 규칙과 경계값을 후속 ADR에서 승인한다.
-- 22장 이미지의 생성 방식 또는 이용 권리와 카드별 해설을 검수한다.
-- ADR-0001의 `1080×1350` PNG가 실기기에서 읽기 쉬운지 검증한다.
-- 구현 후 각 UC의 브라우저 증거를 `docs/QA_EVIDENCE.md`에 연결하고 `Last Verified Commit`을 갱신한다.
+- 간이 사주 규칙과 카드 문구는 엔터테인먼트 하우스 룰로 리뷰 승인한다.
+- 생성된 22장 이미지의 이용 권리와 카드별 표현을 최종 검수한다.
+- ADR-0001의 `1080×1350` PNG가 실기기에서 읽기 쉬운지 계속 검증한다.
+- 브라우저 증거는 `docs/QA_EVIDENCE.md`에 기록한다.

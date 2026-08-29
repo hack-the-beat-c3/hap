@@ -2,10 +2,10 @@
 
 - Owner: 김형준 (`@procloudkim`)
 - Reviewer: 미배정
-- Status: Proposed
+- Status: Implemented — Review pending
 - Related ADR: [`ADR-0001-tarot-mvp-architecture.md`](../adr/ADR-0001-tarot-mvp-architecture.md)
 - Related Claims: 없음 — 제품 내부 설계 계약
-- Last Verified Commit: `1f9bca6` (Vite 스타터, 아래 시퀀스 미구현)
+- Last Verified Commit: `0fed3aa`
 
 ## 1. 경계와 상태
 

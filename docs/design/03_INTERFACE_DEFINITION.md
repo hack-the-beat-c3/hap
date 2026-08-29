@@ -2,12 +2,12 @@
 
 - Owner: 김형준 (`@procloudkim`)
 - Reviewer: 미배정
-- Status: Proposed
+- Status: Implemented — Review pending
 - Related ADR: [`ADR-0001-tarot-mvp-architecture.md`](../adr/ADR-0001-tarot-mvp-architecture.md)
 - Related Claims: 없음 — 제품 내부 설계 계약
-- Last Verified Commit: `1f9bca6`
+- Last Verified Commit: `0fed3aa`
 
-> `1f9bca6` 기준 저장소에는 Vite 기본 화면만 있다. 아래 내용은 구현 완료 명세가 아니라 단일 사용자 정적 웹 MVP의 목표 계약이다.
+> `0fed3aa`에서 아래 단일 사용자 정적 웹 인터페이스와 로컬 처리 경계를 구현·검증했다.
 
 ## 1. 제품 경계
 
