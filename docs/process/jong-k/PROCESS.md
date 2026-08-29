@@ -1,27 +1,21 @@
 # PROCESS — 김종한 (`@jong-k`)
 
-- Status: R&R 정의 필요
-- R&R: 미정
-- PRD: `docs/prd/<domain-slug>.md`
-- 담당 설계문서: 미정(D1~D5 중 1개)
+- Status: **PR #5 Ralph 통합 인계 준비 완료**
+- R&R: **통합 DRI — 최신 main에 김형준 타로 제출본 적용**
+- Source PR: [#5](https://github.com/hack-the-beat-c3/hap/pull/5) (`5fadcf4`)
+- Validated Seed: [`ralph-seed.yaml`](ralph-seed.yaml) (`seed_4ba8a580736c`)
 
-## 먼저 정할 일
+## Ralph 실행 계약
 
-- [ ] 맡을 제품 영역과 해결할 파티 문제를 한 문장으로 선언한다.
-- [ ] 타깃 사용자, 핵심 가치, 구현 범위/비범위를 정한다.
-- [ ] 다른 팀원과 겹치지 않는 담당 설계문서 1개를 선택한다.
-- [ ] 소유할 코드 경로, 작업 브랜치, 리뷰어를 기록한다.
-
-## 구현할 일
-
-- [ ] 3단계 사용자 흐름과 수용 기준이 포함된 PRD를 작성한다.
-- [ ] 근거가 필요한 주장과 출처를 `wiki/claims.md`에 연결한다.
-- [ ] 주요 기술 결정을 ADR로 남긴다.
-- [ ] PRD의 핵심 흐름을 브라우저에서 끝까지 동작하도록 구현한다.
-- [ ] 로딩·빈 상태·오류 상태와 모바일 화면을 처리한다.
+- [ ] 최신 `main`에서 새 통합 브랜치를 만들고 force push·main 직접 작업을 하지 않는다.
+- [ ] Codex에서 `$ralph`를 호출해 이 디렉터리의 `ralph-seed.yaml` 원문을 `seed_content`로 전달한다.
+- [ ] 새 `lineage_id`는 `ralph-pr5-jong-k-<uuid>` 형식으로 만들고 QA를 생략하지 않는다.
+- [ ] main의 `/`, `?pin=`, 룸·공유 덱을 보존하고 PR #5의 `App` 전체를 덮어쓰지 않는다.
+- [ ] 카드 해설·PNG는 참가자 흐름에 이식하고 호스트 공개 전 카드 정보를 DOM/payload에 싣지 않는다.
 
 ## 완료 조건
 
-- [ ] 담당 설계문서와 실제 구현이 일치한다.
-- [ ] 배포 URL과 캡처, 테스트 시각, commit SHA를 `docs/QA_EVIDENCE.md`에 남겼다.
-- [ ] 변경을 커밋하고 작업 브랜치에 푸시했다.
+- [ ] Seed의 모든 acceptance criterion이 통과했다.
+- [ ] ADR, D1~D5, `docs/QA_EVIDENCE.md`가 통합 코드와 일치한다.
+- [ ] 테스트·자산 검사·lint·build·모바일 다중 세션 검증 증거를 PR에 남겼다.
+- [ ] 작업 브랜치가 clean하고 upstream push가 완료됐다.
