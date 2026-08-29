@@ -1,7 +1,7 @@
 # ADR-0001: 팀원 3 사주·오행 엔진
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-29
-- Owners: DRI 배정 대기(AGENTS.md §1, 팀 R&R 미정), Reviewer 배정 대기(사람 승인 대기)
+- Owners: DRI 배정 대기(AGENTS.md §1, 팀 R&R 미정), Reviewer 이무원(lmwmason) — 2026-08-29 채팅 내 승인, PR #1 정식 리뷰는 별도 진행
 - Related: PRM.md Goal 1, AGENTS.md §2.2/§3/§6
 
 ## Context
