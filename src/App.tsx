@@ -1,7 +1,6 @@
-<<<<<<< HEAD
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
-import { derive } from './lib/ohaeng'
+import { derive, type Element as OhaengElement } from './lib/ohaeng'
 import {
   RoomChannel,
   join,
@@ -17,9 +16,19 @@ import {
 import { ChemistryMatrix, ShareCard } from './components/Recap'
 import { TarotSoloFlow } from './components/TarotSoloFlow'
 import { PartyChemistryPlayground } from './components/chemistry'
+import { PartyMatchDashboard } from './PartyMatchDashboard'
+import type { ParticipantResult } from './partyMatch'
 
-type AppMode = 'party' | 'solo_tarot' | 'chemistry_lab'
+type AppMode = 'party' | 'solo_tarot' | 'chemistry_lab' | 'party_match'
 type Role = 'landing' | 'host' | 'guest'
+
+const ELEMENT_COLORS: Record<OhaengElement, string> = {
+  목: '#78a67d',
+  화: '#d96c57',
+  토: '#c69a59',
+  금: '#b9a777',
+  수: '#668dac',
+}
 
 // URL의 ?pin= 로 게스트 입장 여부 판단.
 function readPin(): string | null {
@@ -30,6 +39,15 @@ export default function App() {
   const [mode, setMode] = useState<AppMode>(() => (readPin() ? 'party' : 'party'))
   const [role, setRole] = useState<Role>(() => (readPin() ? 'guest' : 'landing'))
   const [pin, setPin] = useState<string>(() => readPin() ?? '')
+
+  // 매칭 대시보드용 기본 더미 참가자
+  const sampleParticipants: ParticipantResult[] = [
+    { id: '1', nickname: '가람 (나무)', element: 'WOOD', cardId: 'THE_SUN', cardName: '태양', cardRank: 19 },
+    { id: '2', nickname: '나래 (불꽃)', element: 'FIRE', cardId: 'THE_WORLD', cardName: '세계', cardRank: 21 },
+    { id: '3', nickname: '다온 (흙)', element: 'EARTH', cardId: 'THE_STAR', cardName: '별', cardRank: 17 },
+    { id: '4', nickname: '라온 (바위)', element: 'METAL', cardId: 'THE_MAGICIAN', cardName: '마법사', cardRank: 1 },
+    { id: '5', nickname: '마루 (물결)', element: 'WATER', cardId: 'THE_FOOL', cardName: '광대', cardRank: 0 },
+  ]
 
   return (
     <div className="global-app-container">
@@ -59,12 +77,25 @@ export default function App() {
             >
               ⚡ 오행 케미 & 1:1 QR
             </button>
+            <button
+              type="button"
+              className={`global-nav__tab ${mode === 'party_match' ? 'global-nav__tab--active' : ''}`}
+              onClick={() => setMode('party_match')}
+            >
+              📊 파티 매칭 대시보드
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Mode Views */}
       {mode === 'solo_tarot' && <TarotSoloFlow />}
+
+      {mode === 'party_match' && (
+        <main className="app-main">
+          <PartyMatchDashboard participants={sampleParticipants} />
+        </main>
+      )}
 
       {mode === 'chemistry_lab' && (
         <main className="app-main">
@@ -122,9 +153,9 @@ function Landing({
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault()
-    const clean = pinInput.trim().toUpperCase()
-    if (!/^[A-Z0-9]{6}$/.test(clean)) {
-      setErr('PIN은 6자리 영문 대문자/숫자입니다.')
+    const clean = pinInput.trim()
+    if (!/^\d{4}$/.test(clean)) {
+      setErr('PIN은 4자리 숫자입니다.')
       return
     }
     onJoin(clean)
@@ -148,8 +179,8 @@ function Landing({
           <input
             type="text"
             className="input-pin"
-            placeholder="6자리 PIN 입력"
-            maxLength={6}
+            placeholder="4자리 PIN"
+            maxLength={4}
             value={pinInput}
             onChange={(e) => {
               setPinInput(e.target.value)
@@ -165,7 +196,7 @@ function Landing({
 }
 
 function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?: () => void }) {
-  const [state, setState] = useState<RoomState | null>(null)
+  const [state, setState] = useState<RoomState>(() => newRoom(pin))
   const [myId, setMyId] = useState<string>('')
   const [nickname, setNickname] = useState('')
   const [birth, setBirth] = useState('')
@@ -182,9 +213,12 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
     })
     chanRef.current = ch
 
-    // 호스트가 처음 만들 때 룸 초기화
     if (isHost) {
-      newRoom(pin)
+      const init = newRoom(pin)
+      setState(init)
+      ch.publish(init)
+    } else {
+      ch.requestSync()
     }
 
     return () => {
@@ -196,18 +230,21 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
     e.preventDefault()
     if (!nickname.trim()) return
 
-    const ohaeng = derive(birth, noTime ? null : time)
-    const p: Participant = {
+    const [y, m, d] = birth.split('-').map(Number)
+    const h = noTime || !time ? undefined : Number(time.split(':')[0])
+    const profile = derive({ year: y, month: m, day: d, hour: h })
+
+    const p: Omit<Participant, 'ready'> = {
       id: crypto.randomUUID(),
       nickname: nickname.trim(),
-      ohaeng,
-      isHost,
-      ready: true,
-      card: null,
+      element: profile.yearElement,
     }
 
     try {
-      join(pin, p)
+      const next = join(state, p)
+      const readyNext = setReady(next, p.id, true)
+      setState(readyNext)
+      chanRef.current?.publish(readyNext)
       setMyId(p.id)
       setJoined(true)
     } catch (err: unknown) {
@@ -216,7 +253,13 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
   }
 
   const handleReveal = () => {
-    reveal(pin)
+    try {
+      const next = reveal(state)
+      setState(next)
+      chanRef.current?.publish(next)
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : '공개 실패')
+    }
   }
 
   const copyLink = () => {
@@ -226,8 +269,11 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const me = state?.participants.find((p) => p.id === myId)
-  const isAllReady = (state?.participants.length ?? 0) >= 2 && state?.participants.every((p) => p.ready)
+  const me = state.participants.find((p) => p.id === myId)
+  const myCard = me ? state.deal[me.id] : undefined
+  const winningParticipant = winner(state)
+  const isAllReady = state.participants.length >= 2 && state.participants.every((p) => p.ready)
+  const roomUrl = `${location.origin}${location.pathname}?pin=${pin}`
 
   return (
     <div className="party-room">
@@ -296,41 +342,52 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
             {isHost ? '방장으로 입장 & 대기' : '파티 참여하기'}
           </button>
         </form>
-      ) : state?.phase === 'REVEALED' ? (
+      ) : state.phase === 'revealed' ? (
         <div className="revealed-wrap">
-          <div className="card winner-hero">
-            <span className="badge">👑 오늘 파티의 최강 운세</span>
-            <h2>{state.winnerNickname}</h2>
-            <p>메이저 타로 1장 단판 승부 최고 순위!</p>
-          </div>
+          {winningParticipant && (
+            <div className="card winner-hero">
+              <span className="badge">👑 오늘 파티의 최강 운세</span>
+              <h2>{winningParticipant.nickname}</h2>
+              <p>메이저 타로 1장 단판 승부 최고 순위!</p>
+            </div>
+          )}
 
           <div className="card my-result-card">
             <h3>내 운세 카드</h3>
-            {me?.card && (
+            {myCard && (
               <div className="my-card-box">
-                <span className="card-name">{me.card.name}</span>
-                <span className="card-rank">하우스 룰 {me.card.rank}위</span>
+                <span className="card-name">{myCard.name}</span>
+                <span className="card-rank">하우스 룰 {myCard.rank}위</span>
               </div>
             )}
           </div>
 
           {/* 오행 케미 매트릭스 & 공유 */}
-          <ChemistryMatrix participants={state.participants} myId={myId} />
-          <ShareCard me={me} winnerNickname={state.winnerNickname} />
+          <ChemistryMatrix participants={state.participants} />
+          <ShareCard state={state} roomUrl={roomUrl} />
         </div>
       ) : (
         <div className="card waiting-room">
           <div className="waiting-head">
-            <h3>참가자 목록 ({state?.participants.length ?? 0}/{MAX_PARTICIPANTS}명)</h3>
+            <h3>참가자 목록 ({state.participants.length}/{MAX_PARTICIPANTS}명)</h3>
             <span className="phase-badge">대기 중</span>
           </div>
 
           <ul className="participant-list">
-            {state?.participants.map((p) => (
+            {state.participants.map((p) => (
               <li key={p.id} className={`participant-item ${p.id === myId ? 'me' : ''}`}>
-                <span className="p-name">{p.nickname} {p.isHost && '👑'}</span>
-                <span className="p-ohaeng" style={{ backgroundColor: p.ohaeng.color + '22', color: p.ohaeng.color }}>
-                  {p.ohaeng.element} ({p.ohaeng.korean})
+                <span className="p-name">{p.nickname} {p.id === state.participants[0]?.id && '👑'}</span>
+                <span
+                  className="p-ohaeng"
+                  style={{
+                    backgroundColor: ELEMENT_COLORS[p.element] + '22',
+                    color: ELEMENT_COLORS[p.element],
+                    borderColor: ELEMENT_COLORS[p.element],
+                    borderWidth: 1,
+                    borderStyle: 'solid',
+                  }}
+                >
+                  {p.element}
                 </span>
                 <span className="p-status">준비완료</span>
               </li>
@@ -354,17 +411,3 @@ function Party({ pin, isHost, onExit }: { pin: string; isHost: boolean; onExit?:
     </div>
   )
 }
-=======
-import { PartyChemistryPlayground } from './components/chemistry';
-import './App.css';
-
-function App() {
-  return (
-    <main className="app-main">
-      <PartyChemistryPlayground />
-    </main>
-  );
-}
-
-export default App;
->>>>>>> feat/adr-0002-elemental-chemistry

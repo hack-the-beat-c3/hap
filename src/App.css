@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* ==========================================================================
    HAP (합) Unified Application Styles
    ========================================================================== */
@@ -91,6 +90,16 @@ body {
 }
 
 /* Common App Container */
+.app-main {
+  min-height: 100vh;
+  background-color: #0b1120;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .app {
   max-width: 680px;
   margin: 0 auto;
@@ -98,6 +107,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .topbar {
@@ -464,6 +475,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .step-panel {
@@ -660,14 +673,4 @@ body {
   line-height: 1.5;
   color: var(--text);
   margin: 0;
-=======
-.app-main {
-  min-height: 100vh;
-  background-color: #0b1120;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
->>>>>>> feat/adr-0002-elemental-chemistry
 }

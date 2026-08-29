@@ -24,11 +24,6 @@ function localDateKey(date = new Date()): string {
   return `${year}-${month}-${day}`
 }
 
-function displayDate(value: string): string {
-  const [year, month, day] = value.split('-')
-  return `${year}년 ${Number(month)}월 ${Number(day)}일`
-}
-
 export function TarotSoloFlow() {
   const [step, setStep] = useState<AppStep>('HERO_INPUT')
   const [privacyAccepted, setPrivacyAccepted] = useState(false)
@@ -181,21 +176,21 @@ export function TarotSoloFlow() {
             <h2 className="step-title">오늘의 간이 사주</h2>
             <div className="saju-grid">
               <div>
-                <span className="meta-label">태어난 날</span>
-                <span className="meta-value">{displayDate(saju.birthDate)}</span>
-              </div>
-              <div>
-                <span className="meta-label">일주</span>
-                <span className="meta-value">{saju.dayPillar.ganji} ({saju.dayPillar.korean})</span>
+                <span className="meta-label">기준일</span>
+                <span className="meta-value">{saju.calculatedFor}</span>
               </div>
               <div>
                 <span className="meta-label">중심 오행</span>
-                <span className="element-chip" style={{ borderColor: ELEMENTS[saju.dayPillar.element].color }}>
-                  {ELEMENTS[saju.dayPillar.element].icon} {ELEMENTS[saju.dayPillar.element].ko}
+                <span className="element-chip" style={{ borderColor: ELEMENTS[saju.primaryElement].color }}>
+                  {ELEMENTS[saju.primaryElement].icon} {ELEMENTS[saju.primaryElement].ko}
                 </span>
               </div>
+              <div>
+                <span className="meta-label">오늘의 테마</span>
+                <span className="meta-value">{saju.title}</span>
+              </div>
             </div>
-            <p className="saju-desc">{saju.interpretation}</p>
+            <p className="saju-desc">{saju.summary} {saju.advice}</p>
           </div>
 
           {error && <p className="error-banner" role="alert">{error}</p>}
@@ -222,20 +217,23 @@ export function TarotSoloFlow() {
             <div className="card-visual">
               {!cardImageFailed ? (
                 <img
-                  src={draw.card.image}
-                  alt={draw.card.name}
+                  src={draw.card.imagePath}
+                  alt={draw.card.nameKo}
                   className="tarot-art"
                   onError={() => setCardImageFailed(true)}
                 />
               ) : (
-                <div className="tarot-art-fallback">{draw.card.number}. {draw.card.name}</div>
+                <div className="tarot-art-fallback">{draw.card.arcanaNumber}. {draw.card.nameKo}</div>
               )}
             </div>
             <div className="card-copy">
-              <span className="card-badge">No.{draw.card.number}</span>
-              <h2 className="card-name">{draw.card.name} ({draw.card.englishName})</h2>
-              <p className="card-keyword"><strong>키워드:</strong> {draw.card.keyword}</p>
-              <p className="card-message">{draw.card.interpretation}</p>
+              <span className="card-badge">No.{draw.card.arcanaNumber}</span>
+              <h2 className="card-name">{draw.card.nameKo} ({draw.card.nameEn})</h2>
+              <p className="card-keyword"><strong>요약:</strong> {draw.card.summary}</p>
+              <p className="card-message">{draw.card.description}</p>
+              <p className="party-message" style={{ color: '#f59e0b', marginTop: '0.5rem', fontWeight: 600 }}>
+                💬 {draw.card.partyMessage}
+              </p>
             </div>
           </div>
 

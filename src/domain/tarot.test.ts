@@ -1,5 +1,4 @@
-import assert from 'node:assert/strict'
-import test from 'node:test'
+import { describe, it, expect } from 'vitest'
 import { drawOneCard } from './tarot.ts'
 import type { SecureRandom, TarotCard } from './tarot.ts'
 
@@ -25,7 +24,7 @@ function queuedRandom(...queue: number[]): {
     source: {
       getRandomValues(values) {
         const next = queue[callCount++]
-        assert.notEqual(next, undefined)
+        if (next === undefined) throw new Error('Queue empty')
         values[0] = next
         return values
       },
@@ -34,38 +33,37 @@ function queuedRandom(...queue: number[]): {
   }
 }
 
-test('22장·고유 ID·0~21 번호·필수 문구를 검증한다', () => {
-  const cards = makeCards()
-  const unused = queuedRandom(0).source
+describe('tarot domain test', () => {
+  it('22장·고유 ID·0~21 번호·필수 문구를 검증한다', () => {
+    const cards = makeCards()
+    const unused = queuedRandom(0).source
 
-  assert.throws(() => drawOneCard(cards.slice(1), unused), /22장/)
-  assert.throws(
-    () => drawOneCard(cards.map((card, index) => (index === 1 ? { ...card, id: cards[0].id } : card)), unused),
-    /ID/,
-  )
-  assert.throws(
-    () =>
+    expect(() => drawOneCard(cards.slice(1), unused)).toThrow(/22장/)
+    expect(() =>
+      drawOneCard(cards.map((card, index) => (index === 1 ? { ...card, id: cards[0].id } : card)), unused)
+    ).toThrow(/ID/)
+    expect(() =>
       drawOneCard(
         cards.map((card, index) => (index === 1 ? { ...card, arcanaNumber: 0 } : card)),
-        unused,
-      ),
-    /번호/,
-  )
-})
+        unused
+      )
+    ).toThrow(/번호/)
+  })
 
-test('수용 경계값은 첫 카드와 마지막 카드를 선택한다', () => {
-  const cards = makeCards()
-  const limit = Math.floor(2 ** 32 / 22) * 22
+  it('수용 경계값은 첫 카드와 마지막 카드를 선택한다', () => {
+    const cards = makeCards()
+    const limit = Math.floor(2 ** 32 / 22) * 22
 
-  assert.strictEqual(drawOneCard(cards, queuedRandom(0).source), cards[0])
-  assert.strictEqual(drawOneCard(cards, queuedRandom(limit - 1).source), cards[21])
-})
+    expect(drawOneCard(cards, queuedRandom(0).source)).toBe(cards[0])
+    expect(drawOneCard(cards, queuedRandom(limit - 1).source)).toBe(cards[21])
+  })
 
-test('편향 구간을 거부하고 한 장만 반환한다', () => {
-  const cards = makeCards()
-  const limit = Math.floor(2 ** 32 / 22) * 22
-  const random = queuedRandom(limit, 7)
+  it('편향 구간을 거부하고 한 장만 반환한다', () => {
+    const cards = makeCards()
+    const limit = Math.floor(2 ** 32 / 22) * 22
+    const random = queuedRandom(limit, 7)
 
-  assert.strictEqual(drawOneCard(cards, random.source), cards[7])
-  assert.equal(random.calls(), 2)
+    expect(drawOneCard(cards, random.source)).toBe(cards[7])
+    expect(random.calls()).toBe(2)
+  })
 })
