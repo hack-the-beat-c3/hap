@@ -1,7 +1,7 @@
 # ADR-0004: 팀원 2 개인정보 동의·생년월일 입력 플로우
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-29
-- Owners: DRI 배정 대기(AGENTS.md §1, 팀 R&R 미정), Reviewer 배정 대기(사람 승인 대기)
+- Owners: DRI 배정 대기(AGENTS.md §1, 팀 R&R 미정), Reviewer 이무원(lmwmason) — 2026-08-29 채팅 내 승인, PR #4 정식 리뷰는 별도 진행
 - Related: PRM_TEAM2.md Goal 1, ADR-0001, AGENTS.md §2.2/§3/§6
 
 ## Context
